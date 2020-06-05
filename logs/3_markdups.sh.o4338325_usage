@@ -1,0 +1,36 @@
+-- Job Summary -------------------------------------------------------
+Job Id: 4338325.pbsserver for user fjay0039 in queue highmem
+Job Name: 3_markdups.sh
+Project: RDS-FSC-Scape-RW
+Exit Status: 0
+Job run as chunks (hpc203:ncpus=2:mem=67108864kb)
+Walltime requested:   06:00:00 :      Walltime used:   00:52:02
+                               :   Walltime percent:      14.5%
+-- Nodes Summary -----------------------------------------------------
+-- node hpc203 summary
+    Cpus requested:          2 :          Cpus used:       1.46
+          Cpu Time:   01:15:50 :        Cpu percent:      72.9%
+     Mem requested:     64.0GB :           Mem used:     37.0GB
+                               :        Mem percent:      57.9%
+
+-- WARNINGS ----------------------------------------------------------
+
+** Low Walltime utilisation.  While this may be normal, it may help to check the
+** following:
+**   Did the job parameters specify more walltime than necessary? Requesting
+**   lower walltime could help your job to start sooner.
+**   Did your analysis complete as expected or did it crash before completing?
+**   Did the application run more quickly than it should have? Is this analysis
+**   the one you intended to run?
+** 
+** Low Memory utilisation on hpc203. While this may be normal, it may help to check
+** the following:
+**   Did the job parameters specify too much memory? Requesting less RAM could
+**   help your job to start sooner.
+**   Did you use MPI and was the work distributed correctly? Correcting this
+**   could allow your job to run using less RAM in each chunk.
+**   Did your analysis complete as expected or did it crash before completing?
+**   Did the application use less RAM than it should have? Is this analysis the
+**   one you intended to run?
+**
+-- End of Job Summary ------------------------------------------------
