@@ -5,41 +5,67 @@ Proof of concept pipeline to estimate _A. m. capensis_ mutation rates
 ## Aims
 - To familiarise self with the processes and filtering involved
 - Produce a filtered .vcf file of `Larv01` for comparison with `Fdrone` 
+- Produce full pipeline from .fastq to .vcf --> develop into multi-sample pipeline
+	- I/O files
+	- Resource usage
 
-## Map trimmed reads to reference
+## Template
+Following GATK 3.X best practices from Van der Auwera et al. (2013)
 
-### Indexing  
+## Protocol 
 
-#### Download the reference genome for _Apis mellifera_:
+### Download the reference genome for _Apis mellifera_:
 ```
-rsync --copy-links --times --verbose \ 
-rsync://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/004/254/395/GCA_003254395.2_Amel_HAv3.1/GCA_003254395.2_Amel_HAv3.1_genomic.fna.gz \
+cd /scratch/Scape/fred/
+rsync --copy-links --times --verbose \
+rsync://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/003/254/395/GCF_003254395.2_Amel_HAv3.1/GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz \ 
 /scratch/Scape/fred/ # Artemis HPC
 ```
 
-Output: `GCA_003254395.2_Amel_HAv3.1_genomic.fna.gz`
+Output: `GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz` 
 
-#### 1. Index reference:
+### Indexing
+
+#### 1. Index reference
 ```
-qsub scripts/1_bwa_index.sh
+qsub scripts/1_ref_idx.sh
+mv /scratch/Scape/fred/GCF_* 1_ref_idx
 ```
 
-Input: `GCA_003254395.2_Amel_HAv3.1_genomic.fna.gz`
+Input: `GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz`
 
 Outputs:
 ```
-225251116 Jun  4 17:09 GCA_003254395.2_Amel_HAv3.1_genomic.fna.gz.bwt
-112625560 Jun  4 17:10 GCA_003254395.2_Amel_HAv3.1_genomic.fna.gz.sa
- 56312755 Jun  4 17:09 GCA_003254395.2_Amel_HAv3.1_genomic.fna.gz.pac
-    21064 Jun  4 17:09 GCA_003254395.2_Amel_HAv3.1_genomic.fna.gz.ann
-      859 Jun  4 17:09 GCA_003254395.2_Amel_HAv3.1_genomic.fna.gz.amb
+ 69726867 Aug  8  2019 GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz
+      859 Jun 22 16:04 GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz.amb
+    27911 Jun 22 16:04 GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz.ann
+225250988 Jun 22 16:04 GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz.bwt
+ 56312723 Jun 22 16:04 GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz.pac
+112625496 Jun 22 16:05 GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz.sa
 ```
+
+#### 2. Index fasta
+
+Decompress `GCA_003254395.2_Amel_HAv3.1_genomic.fna.gz`:
+```
+cp GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz 2_fa_idx
+bgzip -d 2_fa_idx/GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz
+```
+
+And index it
+```
+module load samtools/1.9
+samtools faidx 2_fa_idxGCF_003254395.2_Amel_HAv3.1_genomic.fna.gz 
+```
+
+Outputs: `GCF_003254395.2_Amel_HAv3.1_genomic.fna.fai`
 
 ### 2. BWA-MEM
 Suggested use for Illumina paired-end reads longer than ~70:
 ```
 qsub scripts/2_bwa_mem.sh
 ```
+
 Inputs:
 ```
 GCA_003254395.2_Amel_HAv3.1_genomic.fna.gz.bwt
