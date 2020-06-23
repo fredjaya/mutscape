@@ -4,7 +4,7 @@ Proof of concept pipeline to estimate _A. m. capensis_ mutation rates
 
 ## Aims
 - To familiarise self with the processes and filtering involved
-- Produce a filtered .vcf file of `Larv01` for comparison with `Fdrone` 
+- Produce a filtered .vcf file of `Larv09` for comparison with `Fdrone` 
 - Produce full pipeline from .fastq to .vcf --> develop into multi-sample pipeline
 	- I/O files
 	- Resource usage
@@ -92,18 +92,27 @@ GCA_003254395.2_Amel_HAv3.1_genomic.fna.gz.amb
 
 Output: `Larv09_pe.sam`
 
-### Dedupping
+### Sorting, converting to BAM, and marking dupes
 
-#### 5. MarkDuplicates
+#### 5. SortSam
 ```
-qsub scripts/5_markdups.sh
+qsub scripts/5_sortsam.sh
+```
+
+Input: `Larv09_pe_sorted.sam`
+
+Output: `Larv09_pe_sorted.bam`
+
+#### 6. MarkDuplicates
+```
+qsub scripts/6_markdups.sh
 ``` 
 
-Input: `Larv00_pe.sam`
+Input: `Larv09_pe_sorted.bam`
 
 Outputs:
 ```
-Larv09_pe_marked_duplicates.bam
+Larv09_pe_marked_dups.bam
 marked_dup_metrics.txt
 ```
 
