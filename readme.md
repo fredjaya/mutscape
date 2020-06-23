@@ -36,7 +36,6 @@ Input: `GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz`
 
 Outputs:
 ```
- 69726867 Aug  8  2019 GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz
       859 Jun 22 16:04 GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz.amb
     27911 Jun 22 16:04 GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz.ann
 225250988 Jun 22 16:04 GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz.bwt
@@ -55,38 +54,56 @@ bgzip -d 2_fa_idx/GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz
 And index it
 ```
 module load samtools/1.9
-samtools faidx 2_fa_idxGCF_003254395.2_Amel_HAv3.1_genomic.fna.gz 
+samtools faidx 2_fa_idx/GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz 
 ```
 
 Outputs: `GCF_003254395.2_Amel_HAv3.1_genomic.fna.fai`
 
-### 2. BWA-MEM
+### 3. Create dictionary
+```
+qsub scripts/3_create_dict.sh
+```
+
+Input: `GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz`
+
+Output: `GCF_003254395.2_Amel_HAv3.1_genomic.dict`
+
+Note: no read group info in *.dict
+- may not need to use downstream?
+- bwa mem step below will be different to source (read group not specified)
+
+### 4. BWA-MEM
+
 Suggested use for Illumina paired-end reads longer than ~70:
 ```
-qsub scripts/2_bwa_mem.sh
+qsub scripts/4_bwa_mem.sh
 ```
+
+Note: `-M` option [not used](https://gatkforums.broadinstitute.org/gatk/discussion/21351/bwa-mem-m-option)
 
 Inputs:
 ```
-GCA_003254395.2_Amel_HAv3.1_genomic.fna.gz.bwt
+GCA_3254396sn.2_Amel_HAv3.1_genomic.fna.gz.bwt
 GCA_003254395.2_Amel_HAv3.1_genomic.fna.gz.sa
 GCA_003254395.2_Amel_HAv3.1_genomic.fna.gz.pac
 GCA_003254395.2_Amel_HAv3.1_genomic.fna.gz.ann
 GCA_003254395.2_Amel_HAv3.1_genomic.fna.gz.amb
 ```
 
-Output: `Larv01-pe.sam`
+Output: `Larv09_pe.sam`
 
-## 3. Picard (MarkDuplicates)
+### Dedupping
+
+#### 5. MarkDuplicates
 ```
-qsub scripts/3_markdups.sh
+qsub scripts/5_markdups.sh
 ``` 
 
-Input: `Larv01_pe.sam`
+Input: `Larv00_pe.sam`
 
 Outputs:
 ```
-Larv01_pe_marked_duplicates.bam
+Larv09_pe_marked_duplicates.bam
 marked_dup_metrics.txt
 ```
 

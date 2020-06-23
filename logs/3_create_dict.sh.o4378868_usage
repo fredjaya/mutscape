@@ -1,0 +1,26 @@
+-- Job Summary -------------------------------------------------------
+Job Id: 4378868.pbsserver for user fjay0039 in queue small
+Job Name: 3_create_dict.sh
+Project: RDS-FSC-Scape-RW
+Exit Status: 0
+Job run as chunks (hpc010:ncpus=1:mem=1048576kb)
+Walltime requested:   00:05:00 :      Walltime used:   00:00:10
+                               :   Walltime percent:       3.3%
+-- Nodes Summary -----------------------------------------------------
+-- node hpc010 summary
+    Cpus requested:          1 :          Cpus used:       0.10
+          Cpu Time:   00:00:01 :        Cpu percent:      10.0%
+     Mem requested:      1.0GB :           Mem used:     81.7MB
+                               :        Mem percent:       8.0%
+
+-- WARNINGS ----------------------------------------------------------
+
+** Low Walltime utilisation.  While this may be normal, it may help to check the
+** following:
+**   Did the job parameters specify more walltime than necessary? Requesting
+**   lower walltime could help your job to start sooner.
+**   Did your analysis complete as expected or did it crash before completing?
+**   Did the application run more quickly than it should have? Is this analysis
+**   the one you intended to run?
+** 
+-- End of Job Summary ------------------------------------------------
