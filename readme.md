@@ -59,7 +59,7 @@ samtools faidx 2_fa_idx/GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz
 
 Outputs: `GCF_003254395.2_Amel_HAv3.1_genomic.fna.fai`
 
-### 3. Create dictionary
+#### 3. Create dictionary
 ```
 qsub scripts/3_create_dict.sh
 ```
@@ -69,10 +69,9 @@ Input: `GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz`
 Output: `GCF_003254395.2_Amel_HAv3.1_genomic.dict`
 
 Note: no read group info in *.dict
-- may not need to use downstream?
-- bwa mem step below will be different to source (read group not specified)
+- read groups are added in step 7, after duplicates are marked
 
-### 4. BWA-MEM
+#### 4. BWA-MEM
 
 Suggested use for Illumina paired-end reads longer than ~70:
 ```
@@ -99,7 +98,7 @@ Output: `Larv09_pe.sam`
 qsub scripts/5_sortsam.sh
 ```
 
-Input: `Larv09_pe_sorted.sam`
+Input: `Larv09_pe.sam`
 
 Output: `Larv09_pe_sorted.bam`
 
@@ -116,3 +115,30 @@ Larv09_pe_marked_dups.bam
 marked_dup_metrics.txt
 ```
 
+### Local realignment around indels
+
+#### 7. Add read groups 
+```
+qsub scripts/7_add_rg.sh
+```
+
+Input: `Larv09_pe_marked_dups.bam`
+
+Output: `Larv09_marked_dups_rg.bam`
+
+#### 8. RealignerTargetCreator
+
+`-L 20` flag omitted
+
+```
+qsub scripts/8_rtc.sh
+```
+
+Inputs: 
+```
+GCF_003254395.2_Amel_HAv3.1_genomic.fna
+GCF_003254395.2_Amel_HAv3.1_genomic.dict
+Larv09_marked_dups_rg.bam
+```
+
+Output: `Larv09_target_intervals.list` 
