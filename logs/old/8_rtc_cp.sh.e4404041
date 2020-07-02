@@ -1,0 +1,35 @@
+INFO  10:14:52,008 HelpFormatter - ------------------------------------------------------------------------------------ 
+INFO  10:14:52,014 HelpFormatter - The Genome Analysis Toolkit (GATK) v3.8-1-0-gf15c1c3ef, Compiled 2018/02/19 05:43:50 
+INFO  10:14:52,014 HelpFormatter - Copyright (c) 2010-2016 The Broad Institute 
+INFO  10:14:52,015 HelpFormatter - For support and documentation go to https://software.broadinstitute.org/gatk 
+INFO  10:14:52,015 HelpFormatter - [Thu Jul 02 10:14:51 AEST 2020] Executing on Linux 2.6.32-696.16.1.el6.x86_64 amd64 
+INFO  10:14:52,015 HelpFormatter - Java HotSpot(TM) 64-Bit Server VM 1.8.0_111-b14 
+INFO  10:14:52,018 HelpFormatter - Program Args: -T RealignerTargetCreator -R GCF_003254395.2_Amel_HAv3.1_genomic.fna -I /scratch/Scape/fred/7_add_rg/Larv09_marked_dups_rg.bam -o Larv09_target_intervals.list 
+INFO  10:14:52,039 HelpFormatter - Executing as fjay0039@hpc005 on Linux 2.6.32-696.16.1.el6.x86_64 amd64; Java HotSpot(TM) 64-Bit Server VM 1.8.0_111-b14. 
+INFO  10:14:52,039 HelpFormatter - Date/Time: 2020/07/02 10:14:52 
+INFO  10:14:52,039 HelpFormatter - ------------------------------------------------------------------------------------ 
+INFO  10:14:52,039 HelpFormatter - ------------------------------------------------------------------------------------ 
+INFO  10:14:52,050 NativeLibraryLoader - Loading libgkl_compression.so from jar:file:/usr/local/gatk/3.8.1/GenomeAnalysisTK.jar!/com/intel/gkl/native/libgkl_compression.so 
+INFO  10:14:52,179 GenomeAnalysisEngine - Deflater: IntelDeflater 
+INFO  10:14:52,180 GenomeAnalysisEngine - Inflater: IntelInflater 
+INFO  10:14:52,180 GenomeAnalysisEngine - Strictness is SILENT 
+INFO  10:14:52,933 GenomeAnalysisEngine - Downsampling Settings: Method: BY_SAMPLE, Target Coverage: 1000 
+INFO  10:14:52,939 SAMDataSource$SAMReaders - Initializing SAMRecords in serial 
+INFO  10:14:53,047 SAMDataSource$SAMReaders - Done initializing BAM readers: total time 0.08 
+INFO  10:14:53,743 GenomeAnalysisEngine - Preparing for traversal over 1 BAM files 
+##### ERROR ------------------------------------------------------------------------------------------
+##### ERROR A USER ERROR has occurred (version 3.8-1-0-gf15c1c3ef): 
+##### ERROR
+##### ERROR This means that one or more arguments or inputs in your command are incorrect.
+##### ERROR The error message below tells you what is the problem.
+##### ERROR
+##### ERROR If the problem is an invalid argument, please check the online documentation guide
+##### ERROR (or rerun your command with --help) to view allowable command-line arguments for this tool.
+##### ERROR
+##### ERROR Visit our website and forum for extensive documentation and answers to 
+##### ERROR commonly asked questions https://software.broadinstitute.org/gatk
+##### ERROR
+##### ERROR Please do NOT post this error to the GATK forum unless you have really tried to fix it yourself.
+##### ERROR
+##### ERROR MESSAGE: Invalid command line: Cannot process the provided BAM/CRAM file(s) because they were not indexed.  The GATK does offer limited processing of unindexed BAM/CRAMs in --unsafe mode, but this feature is unsupported -- use it at your own risk!
+##### ERROR ------------------------------------------------------------------------------------------

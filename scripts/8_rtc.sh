@@ -11,14 +11,15 @@ BAM="Larv09_marked_dups_rg.bam"
 module load gatk/3.8.1
 
 mkdir -p ${SCRATCH_PATH}/8_rtc
-cd ${SCRATCH_PATH}/8_rtc
+cd ${SCRATCH_PATH}/2_fai_dx
 
 # Create symlinks 
-ln -sf ${SCRATCH_PATH}/2_fai_dx/${REF}.fna .
+#ln -sf ${SCRATCH_PATH}/2_fai_dx/${REF}.fna .
+#ln -sf ${SCRATCH_PATH}/2_fai_dx/${REF}.fna.fai .
 ln -sf ${SCRATCH_PATH}/3_create_dict/${REF}.dict .
 ln -sf ${SCRATCH_PATH}/7_add_rg/${BAM} .
 
 gatk -T RealignerTargetCreator \
 	-R ${REF}.fna \
-	-I ${BAM} \
-	-o Larv09_target_intervals.list
+	-I ${SCRATCH_PATH}${BAM} \
+	-o ${SCRATCH_PATH}/8_rtc/Larv09_target_intervals.list

@@ -134,6 +134,33 @@ Output: `Larv09_marked_dups_rg.bam`
 qsub scripts/8_rtc.sh
 ```
 
+```
+##### ERROR MESSAGE: Invalid command line: Cannot process the provided BAM/CRAM fi
+le(s) because they were not indexed.  The GATK does offer limited processing of un
+indexed BAM/CRAMs in --unsafe mode, but this feature is unsupported -- use it at y
+our own risk!                                                                     
+```
+- symlinks don't work?
+- are real files needed to be in the same dir, with no option to specify path of .idx?
+- try:
+
+```
+# Copy reference, index, and dictionary into the same dir
+cd /scratch/Scape/fred
+mkdir 8_rtc_cp
+cp 2_fai_dx/GCF_003254395.2_Amel_HAv3.1_genomic.fna 8_rtc_cp
+cp 2_fai_dx/GCF_003254395.2_Amel_HAv3.1_genomic.fna.fai 8_rtc_cp
+cp 3_create_dict/GCF_003254395.2_Amel_HAv3.1_genomic.dict 8_rtc_cp  
+cp 7_add_rg/Larv09_marked_dups_rg.bam 8_rtc_cp
+
+# Run RealignTargetCreator
+cd ~/mutscape
+qsub scripts/8_rtc_cp.sh
+```
+- nope, same error ):
+- try rerunning all the index steps in one dir?
+
+
 Inputs: 
 ```
 GCF_003254395.2_Amel_HAv3.1_genomic.fna
