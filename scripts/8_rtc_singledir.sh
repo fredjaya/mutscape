@@ -10,10 +10,9 @@ BAM="Larv09_marked_dups_rg.bam"
 
 module load gatk/3.8.1
 
-cd ${SCRATCH_PATH}/8_rtc_cp
-
+cd ${SCRATCH_PATH}/8_rtc_idx
 
 gatk -T RealignerTargetCreator \
 	-R ${REF}.fna \
-	-I ${SCRATCH_PATH}/7_add_rg/${BAM} \
+	-I ${BAM} \
 	-o Larv09_target_intervals.list

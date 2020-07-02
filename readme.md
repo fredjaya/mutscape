@@ -140,7 +140,7 @@ le(s) because they were not indexed.  The GATK does offer limited processing of 
 indexed BAM/CRAMs in --unsafe mode, but this feature is unsupported -- use it at y
 our own risk!                                                                     
 ```
-- symlinks don't work?
+- symlinks dont work?
 - are real files needed to be in the same dir, with no option to specify path of .idx?
 - try:
 
@@ -160,12 +160,36 @@ qsub scripts/8_rtc_cp.sh
 - nope, same error ):
 - try rerunning all the index steps in one dir?
 
+```
+# Copy ref into subdir, as output files automatically write to same dir
+cd /scratch/Scape/fred
+cp GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz 8_rtc_idx
 
+# Index reference
+cd ~/mutscape
+qsub scripts/8_ref_idx.sh
+
+# Decompress ref.gz, as samtools cannot read this compression format
+bgzip -d < GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz > GCF_003254395.2_Amel_HAv3.1_genomic.fna
+
+# And index fasta
+module load samtools/1.9
+samtools faidx GCF_003254395.2_Amel_HAv3.1_genomic.fna 
+
+# Create dictionary
+qsub scripts/8_create_dict.sh
+
+# 
+qsub scripts/8_rtc_singledir.sh
+```
 Inputs: 
 ```
 GCF_003254395.2_Amel_HAv3.1_genomic.fna
 GCF_003254395.2_Amel_HAv3.1_genomic.dict
 Larv09_marked_dups_rg.bam
+# Possibly more of the output files when indexing?
 ```
 
-Output: `Larv09_target_intervals.list` 
+According to [this thread](https://gatkforums.broadinstitute.org/gatk/discussion/2617/bam-is-not-indexed-or-bad-input) it may be an issue of needing to `create_index=true` during markdupes
+
+Going back and adding `CREATE_INDEX=true` when marking duplicates

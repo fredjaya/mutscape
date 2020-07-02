@@ -1,0 +1,22 @@
+[bwa_index] Pack FASTA... 2.83 sec
+[bwa_index] Construct BWT for the packed sequence...
+[BWTIncCreate] textLength=450501768, availableWord=43698956
+[BWTIncConstructFromPacked] 10 iterations done. 71550232 characters processed.
+[BWTIncConstructFromPacked] 20 iterations done. 132696904 characters processed.
+[BWTIncConstructFromPacked] 30 iterations done. 187040248 characters processed.
+[BWTIncConstructFromPacked] 40 iterations done. 235336680 characters processed.
+[BWTIncConstructFromPacked] 50 iterations done. 278258680 characters processed.
+[BWTIncConstructFromPacked] 60 iterations done. 316403816 characters processed.
+[BWTIncConstructFromPacked] 70 iterations done. 350303272 characters processed.
+[BWTIncConstructFromPacked] 80 iterations done. 380429208 characters processed.
+[BWTIncConstructFromPacked] 90 iterations done. 407201160 characters processed.
+[BWTIncConstructFromPacked] 100 iterations done. 430992104 characters processed.
+[BWTIncConstructFromPacked] 110 iterations done. 450501768 characters processed.
+[bwt_gen] Finished constructing BWT in 110 iterations.
+[bwa_index] 157.30 seconds elapse.
+[bwa_index] Update BWT... 1.38 sec
+[bwa_index] Pack forward-only FASTA... 2.14 sec
+[bwa_index] Construct SA from BWT and Occ... 59.55 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: bwa index GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz
+[main] Real time: 226.475 sec; CPU: 223.214 sec
