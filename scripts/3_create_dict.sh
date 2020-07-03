@@ -8,7 +8,7 @@ DIR='/scratch/Scape/fred/rtc_idx'
 
 module load picard/2.18.23
 
-cd $DIR/8_rtc_idx
+cd $DIR
 
 picard CreateSequenceDictionary \
 	R=GCF_003254395.2_Amel_HAv3.1_genomic.fna \
