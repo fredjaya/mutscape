@@ -7,7 +7,7 @@
 DIR=/scratch/Scape/fred/rtc_idx
 READ_PATH=/project/Scape/Trimmomatic/Paired
 SAMPLE=Larv09
-READ_GROUP="'"@RG\tID:${SAMPLE}\tSM:${SAMPLE}\tPL:ILLUMINA\tLB:lib1\tPU:unit1"'"
+READ_GROUP=@RG\\tID:${SAMPLE}\\tSM:${SAMPLE}\\tPL:ILLUMINA\\tLB:lib1\\tPU:unit1
 
 module load bwa/0.7.17
 
