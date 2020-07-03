@@ -2,7 +2,7 @@
 
 #PBS -P RDS-FSC-Scape-RW
 #PBS -l select=1:ncpus=4:mem=16GB
-#PBS -l walltime=6:00:00
+#PBS -l walltime=3:00:00
 
 DIR=/scratch/Scape/fred/rtc_idx
 READ_PATH=/project/Scape/Trimmomatic/Paired

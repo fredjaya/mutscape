@@ -1,0 +1,35 @@
+-- Job Summary -------------------------------------------------------
+Job Id: 4409767.pbsserver for user fjay0039 in queue small
+Job Name: 5_sortsam.sh
+Project: RDS-FSC-Scape-RW
+Exit Status: 0
+Job run as chunks (hpc008:ncpus=1:mem=20971520kb)
+Walltime requested:   01:00:00 :      Walltime used:   00:30:20
+                               :   Walltime percent:      50.6%
+-- Nodes Summary -----------------------------------------------------
+-- node hpc008 summary
+    Cpus requested:          1 :          Cpus used:       0.94
+          Cpu Time:   00:28:32 :        Cpu percent:      94.1%
+     Mem requested:     20.0GB :           Mem used:     20.0GB
+                               :        Mem percent:     100.0%
+
+-- WARNINGS ----------------------------------------------------------
+
+** Low Walltime utilisation.  While this may be normal, it may help to check the
+** following:
+**   Did the job parameters specify more walltime than necessary? Requesting
+**   lower walltime could help your job to start sooner.
+**   Did your analysis complete as expected or did it crash before completing?
+**   Did the application run more quickly than it should have? Is this analysis
+**   the one you intended to run?
+** 
+** Excessive Memory utilisation on hpc008. While this may be normal, it may help to
+** check the following:
+**   Did the job parameters specify enough memory?
+**   Did your analysis complete successfully, or did it run out of RAM?
+**   Did you use MPI and was the work distributed correctly? Correcting this
+**   could allow your job to run using less RAM in each chunk.
+**   Did the application use more memory than it should have? Is this analysis
+**   the one you intended to run?
+**
+-- End of Job Summary ------------------------------------------------
