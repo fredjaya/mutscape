@@ -1,0 +1,20 @@
+-- Job Summary -------------------------------------------------------
+Job Id: 4408758.pbsserver for user fjay0039 in queue small
+Job Name: 1_bwa_index.sh
+Project: RDS-FSC-Scape-RW
+Exit Status: 0
+Job run as chunks (hpc003:ncpus=1:mem=1048576kb)
+Walltime requested:   00:05:00 :      Walltime used:   00:03:52
+                               :   Walltime percent:      77.3%
+-- Nodes Summary -----------------------------------------------------
+-- node hpc003 summary
+    Cpus requested:          1 :          Cpus used:       0.75
+          Cpu Time:   00:02:55 :        Cpu percent:      75.4%
+     Mem requested:      1.0GB :           Mem used:    810.1MB
+                               :        Mem percent:      79.1%
+
+-- WARNINGS ----------------------------------------------------------
+
+No warnings.
+
+-- End of Job Summary ------------------------------------------------

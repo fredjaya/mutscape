@@ -2,15 +2,14 @@
 
 #PBS -P RDS-FSC-Scape-RW 
 #PBS -l select=1:ncpus=1:mem=1GB
-#PBS -l walltime=00:05:00
+#PBS -l walltime=00:01:00
 
-SCRATCH_PATH="/scratch/Scape/fred"
+DIR='/scratch/Scape/fred/rtc_idx'
 
 module load picard/2.18.23
 
-mkdir -p ${SCRATCH_PATH}/3_create_dict
-cd ${SCRATCH_PATH}/3_create_dict
+cd $DIR/8_rtc_idx
 
 picard CreateSequenceDictionary \
-	R=${SCRATCH_PATH}/GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz \
-	O=${SCRATCH_PATH}/3_create_dict/GCF_003254395.2_Amel_HAv3.1_genomic.dict
+	R=GCF_003254395.2_Amel_HAv3.1_genomic.fna \
+	O=GCF_003254395.2_Amel_HAv3.1_genomic.dict
