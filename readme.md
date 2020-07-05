@@ -23,4 +23,13 @@ qsub scripts/3_create_dict.sh
 
 # Map reads
 qsub scripts/4_bwa_mem.sh
+
+# Sort and convert to bam
+qsub scripts/5_sortsam.sh
+
+# Mark duplicates
+qsub scripts/6_markdups.sh
+
+# Realign target creator
+qsub scripts/7_rtc.sh
 ```
