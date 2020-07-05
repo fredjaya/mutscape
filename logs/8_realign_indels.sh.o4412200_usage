@@ -1,0 +1,27 @@
+-- Job Summary -------------------------------------------------------
+Job Id: 4412200.pbsserver for user fjay0039 in queue small
+Job Name: 8_realign_indels.sh
+Project: RDS-FSC-Scape-RW
+Exit Status: 0
+Job run as chunks (hpc015:ncpus=2:mem=16777216kb)
+Walltime requested:   05:00:00 :      Walltime used:   03:38:40
+                               :   Walltime percent:      72.9%
+-- Nodes Summary -----------------------------------------------------
+-- node hpc015 summary
+    Cpus requested:          2 :          Cpus used:       1.01
+          Cpu Time:   03:41:28 :        Cpu percent:      50.6%
+     Mem requested:     16.0GB :           Mem used:     13.1GB
+                               :        Mem percent:      82.0%
+
+-- WARNINGS ----------------------------------------------------------
+
+** Low CPU utilisation on hpc015.  While this may be normal, it may help to check
+** the following:
+**   Did the job parameters specify too many cores?  Requesting fewer cores
+**   could help your job to start sooner.
+**   Did you use MPI and was the work distributed correctly? Correcting this
+**   could make your job to run faster without needing any more cores.
+**   Did the application use fewer cores than it should have? Is this analysis
+**   the one you intended to run?
+**
+-- End of Job Summary ------------------------------------------------

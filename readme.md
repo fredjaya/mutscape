@@ -1,13 +1,27 @@
-When running RealignTargetCreator, an error with no bam indexing persists
+# mutscape
 
-Aim:
-- [ ] Re-run pipe from the beginning
-- [ ] Decompress, and re-compress REF with bgzip
-- [ ] Save all outputs in the same folder
-- [ ] Add @RG during bwa-mem, so .bai output from MarkDuplicates is the direct input to RTC
+Proof-of-concept pipeline to estimate _A. m. capensis_ mutation rates
+
+## Aims
+- To familiarise self with the processes and filter involved
+- Produce a filtered `.vcf` file of Larv09 for comparison with Fdrone
+- Produce full pipeline from `.fastq` to `.vcf` -> develop into multi-sample pipeline
+	- I/O files
+	- Resource usage
+
+## Template
+Following GATK 3.X best practices from Van der Auwera et al. (2013)
+
+## Protocol
 
 
 ```
+# Download the reference genome for _Apis mellifera_
+cd /scratch/Scape/fred/
+rsync --copy-links --times --verbose \
+rsync://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/003/254/395/GCF_003254395.2_Amel_HAv3.1/GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz \ 
+/scratch/Scape/fred/ # Artemis HPC
+
 # Decompress reference to avoid bgzip indexing issues
 cd /scratch/Scape/fred/rtc_idx
 bgzip -d GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz
@@ -32,4 +46,8 @@ qsub scripts/6_markdups.sh
 
 # Realign target creator
 qsub scripts/7_rtc.sh
+
+# Realign reads around indels
+qsub scripts/8_realign_indels.sh
+
 ```
