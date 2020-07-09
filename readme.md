@@ -14,7 +14,7 @@ Following GATK 3.X best practices from Van der Auwera et al. (2013)
 
 ## Protocol
 
-
+### Preparing sequence data (`.fastq` to `.bam`)
 ```
 # Download the reference genome for _Apis mellifera_
 cd /scratch/Scape/fred/
@@ -49,5 +49,13 @@ qsub scripts/7_rtc.sh
 
 # Realign reads around indels
 qsub scripts/8_realign_indels.sh
+```
+
+### Call SNPs on unrecalibrated data for BSQR
+According to [documentation](https://github.com/broadinstitute/gatk-docs/blob/master/gatk3-methods-and-algorithms/Base_Quality_Score_Recalibration_(BQSR).md).
+
+ReduceReads skipped as deprecated in GATK3
 
 ```
+# HaplotypeCaller - call all sites in discovery mode
+qsub scripts/9_unrecal_hap_call.sh 
