@@ -7,7 +7,7 @@
 DIR=/scratch/Scape/fred/rtc_idx
 REF="GCF_003254395.2_Amel_HAv3.1_genomic"
 BAM="Larv09_realigned_reads.bam"
-RECAL="Larv09_recal_covar.table"
+RECAL="Larv09_pre_recal.table"
 
 cd $DIR
 module load gatk/3.8.1

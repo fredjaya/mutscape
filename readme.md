@@ -69,10 +69,14 @@ Plots deprecated?
 # Generate tables of covariation for recalibration
 qsub scripts/10_bqsr_covar.sh
 
-# Generate 
+# Generate covar tables after recalibration to compare with pre-bqsr  
 qsub scripts/11_post_bqsr.sh
+
 # Output bam file with recalibrated reads
 qsub scripts/12_recalibrate.sh 
+
+# Generate plots for pre and post-bqsr recalibration
+qsub scripts/13_analyze_covar.sh
 ```
 
 Notes:
