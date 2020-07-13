@@ -62,4 +62,19 @@ qsub scripts/9_unrecal_hap_call.sh
 ```
 
 ### 3. Base Quality Score Recalibration (BQSR)
+
+Plots deprecated?
+
+```
+# Generate tables of covariation for recalibration
+qsub scripts/10_bqsr_covar.sh
+
+# Generate 
+qsub scripts/11_post_bqsr.sh
+# Output bam file with recalibrated reads
+qsub scripts/12_recalibrate.sh 
+```
+
+Notes:
+- Apply BSQR should only be used with the covariates table created from the same input BAM
  
