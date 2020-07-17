@@ -1,0 +1,26 @@
+-- Job Summary -------------------------------------------------------
+Job Id: 4559117.pbsserver for user fjay0039 in queue small
+Job Name: 11_post_bsqr.sh
+Project: RDS-FSC-Scape-RW
+Exit Status: 0
+Job run as chunks (hpc013:ncpus=2:mem=12582912kb)
+Walltime requested:   10:00:00 :      Walltime used:   02:37:05
+                               :   Walltime percent:      26.2%
+-- Nodes Summary -----------------------------------------------------
+-- node hpc013 summary
+    Cpus requested:          2 :          Cpus used:       1.57
+          Cpu Time:   04:05:57 :        Cpu percent:      78.3%
+     Mem requested:     12.0GB :           Mem used:      9.6GB
+                               :        Mem percent:      80.3%
+
+-- WARNINGS ----------------------------------------------------------
+
+** Low Walltime utilisation.  While this may be normal, it may help to check the
+** following:
+**   Did the job parameters specify more walltime than necessary? Requesting
+**   lower walltime could help your job to start sooner.
+**   Did your analysis complete as expected or did it crash before completing?
+**   Did the application run more quickly than it should have? Is this analysis
+**   the one you intended to run?
+** 
+-- End of Job Summary ------------------------------------------------

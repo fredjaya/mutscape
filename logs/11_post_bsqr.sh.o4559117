@@ -1,0 +1,2 @@
+There were 1 WARN messages, the first 1 are repeated below.
+WARN  10:33:22,965 MicroScheduler - Number of requested GATK threads 40 is more than the number of available processors on this machine 24 

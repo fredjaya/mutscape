@@ -1,0 +1,35 @@
+-- Job Summary -------------------------------------------------------
+Job Id: 4496840.pbsserver for user fjay0039 in queue small
+Job Name: 10_bsqr_covar.sh
+Project: RDS-FSC-Scape-RW
+Exit Status: 0
+Job run as chunks (hpc013:ncpus=2:mem=12582912kb)
+Walltime requested:   04:00:00 :      Walltime used:   02:22:01
+                               :   Walltime percent:      59.2%
+-- Nodes Summary -----------------------------------------------------
+-- node hpc013 summary
+    Cpus requested:          2 :          Cpus used:       1.13
+          Cpu Time:   02:40:51 :        Cpu percent:      56.6%
+     Mem requested:     12.0GB :           Mem used:      9.8GB
+                               :        Mem percent:      81.3%
+
+-- WARNINGS ----------------------------------------------------------
+
+** Low Walltime utilisation.  While this may be normal, it may help to check the
+** following:
+**   Did the job parameters specify more walltime than necessary? Requesting
+**   lower walltime could help your job to start sooner.
+**   Did your analysis complete as expected or did it crash before completing?
+**   Did the application run more quickly than it should have? Is this analysis
+**   the one you intended to run?
+** 
+** Low CPU utilisation on hpc013.  While this may be normal, it may help to check
+** the following:
+**   Did the job parameters specify too many cores?  Requesting fewer cores
+**   could help your job to start sooner.
+**   Did you use MPI and was the work distributed correctly? Correcting this
+**   could make your job to run faster without needing any more cores.
+**   Did the application use fewer cores than it should have? Is this analysis
+**   the one you intended to run?
+**
+-- End of Job Summary ------------------------------------------------

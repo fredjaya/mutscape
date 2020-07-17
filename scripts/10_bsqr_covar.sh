@@ -17,4 +17,5 @@ gatk -T BaseRecalibrator \
 	-R ${REF}.fna \
 	-I ${BAM} \
 	-knownSites ${VCF} \
-	-o Larv09_pre_recal.table 
+	-o Larv09_pre_recal.table
+# add -nt -nct 

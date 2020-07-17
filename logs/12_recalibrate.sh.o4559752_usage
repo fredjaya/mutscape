@@ -1,0 +1,35 @@
+-- Job Summary -------------------------------------------------------
+Job Id: 4559752.pbsserver for user fjay0039 in queue small
+Job Name: 12_recalibrate.sh
+Project: RDS-FSC-Scape-RW
+Exit Status: 0
+Job run as chunks (hpc004:ncpus=4:mem=16777216kb)
+Walltime requested:   06:00:00 :      Walltime used:   01:11:32
+                               :   Walltime percent:      19.9%
+-- Nodes Summary -----------------------------------------------------
+-- node hpc004 summary
+    Cpus requested:          4 :          Cpus used:       2.97
+          Cpu Time:   03:32:37 :        Cpu percent:      74.3%
+     Mem requested:     16.0GB :           Mem used:     16.0GB
+                               :        Mem percent:     100.0%
+
+-- WARNINGS ----------------------------------------------------------
+
+** Low Walltime utilisation.  While this may be normal, it may help to check the
+** following:
+**   Did the job parameters specify more walltime than necessary? Requesting
+**   lower walltime could help your job to start sooner.
+**   Did your analysis complete as expected or did it crash before completing?
+**   Did the application run more quickly than it should have? Is this analysis
+**   the one you intended to run?
+** 
+** Excessive Memory utilisation on hpc004. While this may be normal, it may help to
+** check the following:
+**   Did the job parameters specify enough memory?
+**   Did your analysis complete successfully, or did it run out of RAM?
+**   Did you use MPI and was the work distributed correctly? Correcting this
+**   could allow your job to run using less RAM in each chunk.
+**   Did the application use more memory than it should have? Is this analysis
+**   the one you intended to run?
+**
+-- End of Job Summary ------------------------------------------------
