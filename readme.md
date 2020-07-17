@@ -72,7 +72,7 @@ qsub scripts/10_bqsr_covar.sh
 # Generate covar tables after recalibration to compare with pre-bqsr  
 qsub scripts/11_post_bqsr.sh
 
-# Output bam file with recalibrated reads
+# Output bam file with recalibrated reads (PrintReads)
 qsub scripts/12_recalibrate.sh 
 
 # Generate plots for pre and post-bqsr recalibration
@@ -81,4 +81,9 @@ qsub scripts/13_analyze_covar.sh
 
 Notes:
 - Apply BSQR should only be used with the covariates table created from the same input BAM
- 
+
+### 4. Call variants with HaplotypeCaller
+```
+# Call variants with recalibrated .bam
+qsub scripts/14_hap_call.sh
+``` 

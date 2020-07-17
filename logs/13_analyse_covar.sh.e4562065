@@ -1,0 +1,30 @@
+INFO  14:59:10,753 HelpFormatter - ------------------------------------------------------------------------------------ 
+INFO  14:59:10,763 HelpFormatter - The Genome Analysis Toolkit (GATK) v3.8-1-0-gf15c1c3ef, Compiled 2018/02/19 05:43:50 
+INFO  14:59:10,764 HelpFormatter - Copyright (c) 2010-2016 The Broad Institute 
+INFO  14:59:10,764 HelpFormatter - For support and documentation go to https://software.broadinstitute.org/gatk 
+INFO  14:59:10,764 HelpFormatter - [Fri Jul 17 14:59:10 AEST 2020] Executing on Linux 2.6.32-696.16.1.el6.x86_64 amd64 
+INFO  14:59:10,764 HelpFormatter - Java HotSpot(TM) 64-Bit Server VM 1.8.0_111-b14 
+INFO  14:59:10,767 HelpFormatter - Program Args: -T AnalyzeCovariates -R GCF_003254395.2_Amel_HAv3.1_genomic.fna -before Larv09_pre_recal.table -after Larv09_post_recal.table -plots Larv09_bqsr_report.pdf 
+INFO  14:59:10,799 HelpFormatter - Executing as fjay0039@hpc004 on Linux 2.6.32-696.16.1.el6.x86_64 amd64; Java HotSpot(TM) 64-Bit Server VM 1.8.0_111-b14. 
+INFO  14:59:10,800 HelpFormatter - Date/Time: 2020/07/17 14:59:10 
+INFO  14:59:10,800 HelpFormatter - ------------------------------------------------------------------------------------ 
+INFO  14:59:10,800 HelpFormatter - ------------------------------------------------------------------------------------ 
+INFO  14:59:10,809 NativeLibraryLoader - Loading libgkl_compression.so from jar:file:/usr/local/gatk/3.8.1/GenomeAnalysisTK.jar!/com/intel/gkl/native/libgkl_compression.so 
+INFO  14:59:10,862 GenomeAnalysisEngine - Deflater: IntelDeflater 
+INFO  14:59:10,862 GenomeAnalysisEngine - Inflater: IntelInflater 
+INFO  14:59:10,863 GenomeAnalysisEngine - Strictness is SILENT 
+INFO  14:59:11,330 GenomeAnalysisEngine - Downsampling Settings: Method: BY_SAMPLE, Target Coverage: 1000 
+INFO  14:59:11,924 GenomeAnalysisEngine - Preparing for traversal 
+INFO  14:59:11,926 GenomeAnalysisEngine - Done preparing for traversal 
+INFO  14:59:11,927 ProgressMeter - [INITIALIZATION COMPLETE; STARTING PROCESSING] 
+INFO  14:59:11,927 ProgressMeter -                 | processed |    time |    per 1M |           |   total | remaining 
+INFO  14:59:11,927 ProgressMeter -        Location |     sites | elapsed |     sites | completed | runtime |   runtime 
+INFO  14:59:12,312 ContextCovariate - 		Context sizes: base substitution model 2, indel substitution model 3 
+INFO  14:59:13,447 ContextCovariate - 		Context sizes: base substitution model 2, indel substitution model 3 
+INFO  14:59:13,509 AnalyzeCovariates - Generating csv file '/tmp/AnalyzeCovariates400681411962808245.csv' 
+INFO  14:59:13,788 AnalyzeCovariates - Generating plots file 'Larv09_bqsr_report.pdf' 
+INFO  14:59:27,366 Walker - [REDUCE RESULT] Traversal result is: org.broadinstitute.gatk.tools.walkers.bqsr.AnalyzeCovariates$None@7d44eab 
+INFO  14:59:27,374 ProgressMeter -            done         0.0    15.0 s      25.5 w      100.0%    15.0 s       0.0 s 
+INFO  14:59:27,374 ProgressMeter - Total runtime 15.45 secs, 0.26 min, 0.00 hours 
+------------------------------------------------------------------------------------------
+Done. ------------------------------------------------------------------------------------------
