@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #PBS -P RDS-FSC-Scape-RW 
-#PBS -l select=1:ncpus=4:mem=12GB
+#PBS -l select=1:ncpus=4:mem=16GB
 #PBS -l walltime=15:00:00
 
 DIR=/scratch/Scape/fred/rtc_idx
@@ -18,4 +18,4 @@ gatk -T HaplotypeCaller \
 	--output_mode EMIT_ALL_SITES \
 	-stand_call_conf 10 \
 	-o Larv09_raw_variants_recal.vcf \
-	-nt 1 -nct 39 # Heldenbrand et al. (2019)	 
+	-nt 1 -nct 24 # nct = 39; Heldenbrand et al. (2019)	 

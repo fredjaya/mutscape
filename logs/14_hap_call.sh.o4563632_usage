@@ -1,0 +1,37 @@
+-- Job Summary -------------------------------------------------------
+Job Id: 4563632.pbsserver for user fjay0039 in queue small
+Job Name: 14_hap_call.sh
+Project: RDS-FSC-Scape-RW
+Exit Status: 0
+Job run as chunks (hpc001:ncpus=4:mem=12582912kb)
+Walltime requested:   15:00:00 :      Walltime used:   13:03:15
+                               :   Walltime percent:      87.0%
+-- Nodes Summary -----------------------------------------------------
+-- node hpc001 summary
+    Cpus requested:          4 :          Cpus used:       3.98
+          Cpu Time:   51:54:43 :        Cpu percent:      99.4%
+     Mem requested:     12.0GB :           Mem used:     12.0GB
+                               :        Mem percent:     100.0%
+
+-- WARNINGS ----------------------------------------------------------
+
+** High CPU utilisation on hpc001.  This is often normal, however you might want
+** to double-check if you need to request more cores or have misconfigured MPI
+** if your jobs ran slower than expected.  It might help to check the following:
+**   Did the job parameters specify enough cores? Requesting more cores could
+**   help your job run faster.
+**   Did you use MPI and was the work distributed correctly? Correcting this
+**   could make your job to run faster without needing any more cores.
+**   Did the application use more cores than it should have? Is this analysis
+**   the one you intended to run?
+**
+** Excessive Memory utilisation on hpc001. While this may be normal, it may help to
+** check the following:
+**   Did the job parameters specify enough memory?
+**   Did your analysis complete successfully, or did it run out of RAM?
+**   Did you use MPI and was the work distributed correctly? Correcting this
+**   could allow your job to run using less RAM in each chunk.
+**   Did the application use more memory than it should have? Is this analysis
+**   the one you intended to run?
+**
+-- End of Job Summary ------------------------------------------------
