@@ -57,8 +57,11 @@ According to [documentation](https://github.com/broadinstitute/gatk-docs/blob/ma
 ReduceReads skipped as deprecated in GATK3
 
 ```
-# HaplotypeCaller - call all sites in discovery mode
+# If diploid (queen) use HaplotypeCaller to call all sites in discovery mode
 qsub scripts/9_unrecal_hap_call.sh
+
+# If haploid (drones) use UnifiedGenotyper
+qsub scripts/9_unrecal_ug.sh
 ```
 
 ### 3. Base Quality Score Recalibration (BQSR)
@@ -84,6 +87,12 @@ Notes:
 
 ### 4. Call variants with HaplotypeCaller
 ```
-# Call variants with recalibrated .bam
+# Call variants with recalibrated .bam (diploid)
 qsub scripts/14_hap_call.sh
-``` 
+
+# Call variants with recalibrated .bam (haploid)
+qsub scripts/14_ug.sh
+
+```
+
+### 4. Variant Quality Score Recalibration (VQSR)

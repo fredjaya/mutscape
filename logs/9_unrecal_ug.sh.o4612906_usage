@@ -1,0 +1,20 @@
+-- Job Summary -------------------------------------------------------
+Job Id: 4612906.pbsserver for user fjay0039 in queue small
+Job Name: 9_unrecal_ug.sh
+Project: RDS-FSC-Scape-RW
+Exit Status: 0
+Job run as chunks (hpc003:ncpus=4:mem=20971520kb)
+Walltime requested:   01:30:00 :      Walltime used:   01:16:49
+                               :   Walltime percent:      85.4%
+-- Nodes Summary -----------------------------------------------------
+-- node hpc003 summary
+    Cpus requested:          4 :          Cpus used:       3.66
+          Cpu Time:   04:41:24 :        Cpu percent:      91.6%
+     Mem requested:     20.0GB :           Mem used:     18.2GB
+                               :        Mem percent:      91.1%
+
+-- WARNINGS ----------------------------------------------------------
+
+No warnings.
+
+-- End of Job Summary ------------------------------------------------
