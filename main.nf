@@ -14,16 +14,25 @@
 //// Define default parameters
 
 params.ref    = "/scratch/Scape/fred/GCF_003254395.2_Amel_HAv3.1_genomic.fna"
+params.fai    = "/scratch/Scape/fred/GCF_003254395.2_Amel_HAv3.1_genomic.fna.fai"
+params.dict   = "/scratch/Scape/fred/GCF_003254395.2_Amel_HAv3.1_genomic.dict"
 //params.reads  = "/project/Scape/Trimmomatic/Paired/*_{R1,R2}_paired.fastq.gz"
 params.reads  = "/scratch/Scape/fred/nf_test/*_{R1,R2}_paired.fastq.gz"
-params.outdir = "$baseDir"
+params.outdir = "/scratch/Scape/fred/nf_test"
 
 log.info """\
 M U T S C A P E
 ===============
+REFERENCE GENOME:
 ref    : ${params.ref}
+fai    : ${params.fai}
+dict   : ${params.dict}
+
+READS:
 reads  : ${params.reads}
+
 outdir : ${params.outdir}
+===============
 """
 
 // Define read channels
@@ -35,6 +44,8 @@ reads_ch = Channel.fromFilePairs(params.reads)
 //// Map trimmed reads (paired) to reference genome
 
 process bwa {
+  
+  tag '$sampleId'
   
   input: 
     path ref from params.ref 
@@ -51,21 +62,23 @@ process bwa {
     module load samtools/1.9
  
     bwa mem -R \"${readGroup}\" -t 24 ${ref} ${reads} | \
-    samtools sort -@24 -o ${sampleId}_pe_sorted.bam -O bam
+    samtools sort -@24 -o ${sampleId}_pe_sorted.bam -
     """
 }
 
 
 process markDuplicates {
   
+  tag "${sampleId}"
+  
   input: 
     tuple val(sampleId), path(bam) from markdups_ch
 
   output:
     tuple \
-      val(sampleId) \
-      path("${sampleId}_marked_dups.bam") \
-      path("${sampleId}_marked_dups.bai") into marked_bam_ch    
+      val(sampleId), \
+      path("${sampleId}_marked_dups.bam"), \
+      path("${sampleId}_marked_dups.bai") into marked_bam_ch1, marked_bam_ch2 
     tuple val(sampleId), path("${sampleId}_marked_dup_metrics.txt")
      
   script:
@@ -81,21 +94,25 @@ process markDuplicates {
 }
 
 process realignerTargetCreator {
-  
+
+  tag "${sampleId}"
+    
   input: 
-    path ref from params.ref 
-    tuple val(sampleId), path(bam), path(bai) from marked_bam_ch 
+    path ref from params.ref
+    path fai from params.fai 
+    path dict from params.dict
+    tuple val(sampleId), path(bam), path(bai) from marked_bam_ch1 
 
   output:
     tuple \
-      val(sampleId) \
-      path("${sampleId}"_target_intervals.list) into intervals_ch 
+      val(sampleId), \
+      path("${sampleId}_target_intervals.list") into intervals_ch 
 
   script:
     """
     module load gatk/3.8.1
 
-    gatk -T RealignerTargerCreator \
+    gatk -T RealignerTargetCreator \
          -R ${ref} \
          -I ${bam} \
          -o ${sampleId}_target_intervals.list
@@ -104,16 +121,18 @@ process realignerTargetCreator {
 }
 
 process indelRealigner {
-  
+ 
+  tag "${sampleId}"
+ 
   input: 
     path ref from params.ref
-    tuple val(sampleId), path(bam), path(bai) from marked_bam_ch
+    tuple val(sampleId), path(bam), path(bai) from marked_bam_ch2
     tuple val(sampleId), path(intervals) from intervals_ch
 
   output:
     tuple \
-      val(sampleId) \
-      path("${sampleId}_realigned_reads.bam") \
+      val(sampleId), \
+      path("${sampleId}_realigned_reads.bam"), \
       path("${sampleId}_realigned_reads.bai") into realigned_bam_ch
        
   script:
@@ -129,6 +148,8 @@ process indelRealigner {
 
 /*
 process {
+
+  tag "${sampleId}"
   
   input: 
 
