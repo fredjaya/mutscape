@@ -18,7 +18,7 @@ params.fai    = "/scratch/Scape/fred/GCF_003254395.2_Amel_HAv3.1_genomic.fna.fai
 params.dict   = "/scratch/Scape/fred/GCF_003254395.2_Amel_HAv3.1_genomic.dict"
 //params.reads  = "/project/Scape/Trimmomatic/Paired/*_{R1,R2}_paired.fastq.gz"
 params.reads  = "/scratch/Scape/fred/nf_test/*_{R1,R2}_paired.fastq.gz"
-params.outdir = "/scratch/Scape/fred/nf_test"
+params.outDir = "/scratch/Scape/fred/nf_test"
 
 log.info """\
 M U T S C A P E
@@ -31,7 +31,7 @@ dict   : ${params.dict}
 READS:
 reads  : ${params.reads}
 
-outdir : ${params.outdir}
+outDir : ${params.outDir}
 ===============
 """
 
@@ -41,32 +41,70 @@ reads_ch = Channel.fromFilePairs(params.reads)
 
 // 1. PREPARE SEQUENCE DATA 
 
-//// Map trimmed reads (paired) to reference genome
+process bwaIndex {
 
-process bwa {
-  
-  tag '$sampleId'
+  label 'bwa'
+  publishDir "$params.outDir"
+
+  input:
+    path ref from params.ref
+
+  output:
+    path("${ref}.*") into bwaIndex_ch
+
+  script:
+    """
+    bwa index ${ref}
+    """
+}
+
+process bwaMapReads {
+
+  label 'bwa'
+  tag "${sampleId}"
   
   input: 
-    path ref from params.ref 
+    path ref from params.ref
+    path bwaIndex from bwaIndex_ch 
     tuple val(sampleId), path(reads) from reads_ch
     
   output:
-    tuple val(sampleId), path("${sampleId}_pe_sorted.bam") into markdups_ch 
+    tuple val(sampleId), path("${sampleId}_pe.sam") into sam_ch 
 
   script:
     readGroup = "@RG\\tID:${sampleId}\\tSM:${sampleId}\\tPL:ILLUMINA\\tLB:lib1\\tPU:unit1"
     
     """
-    module load bwa/0.7.17
-    module load samtools/1.9
- 
-    bwa mem -R \"${readGroup}\" -t 24 ${ref} ${reads} | \
-    samtools sort -@24 -o ${sampleId}_pe_sorted.bam -
+    bwa mem \
+        -R \"${readGroup}\" \
+        -t 24 \
+        ${ref} \
+        ${reads} \
+        > ${sampleId}_pe.sam 
     """
 }
 
+process samtoolsSort {
 
+  tag "${sampleId}"
+
+  input:
+    tuple val(sampleId), path(sam) from sam_ch
+
+  output:
+      tuple val(sampleId), path("${sampleId}_sorted.bam") into sortedbam_ch
+
+  script:
+    """
+    samtools sort \
+             -@24 \
+             -o ${sampleId}_sorted.bam \
+             -O bam \
+             ${sam}
+    """
+}
+
+/*
 process markDuplicates {
   
   tag "${sampleId}"
@@ -83,7 +121,7 @@ process markDuplicates {
      
   script:
     """ 
-    module load picard/2.7.1
+    #module load picard/2.7.1
   
     picard MarkDuplicates \
            I=${bam} \
@@ -110,7 +148,7 @@ process realignerTargetCreator {
 
   script:
     """
-    module load gatk/3.8.1
+    #module load gatk/3.8.1
 
     gatk -T RealignerTargetCreator \
          -R ${ref} \
@@ -146,7 +184,6 @@ process indelRealigner {
 
 }
 
-/*
 process {
 
   tag "${sampleId}"

@@ -1,2 +1,9 @@
+# vim
 *.swp
 *.swo
+
+# nextflow
+data/
+.nextflow*
+trace/
+work/
