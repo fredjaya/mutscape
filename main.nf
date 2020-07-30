@@ -16,6 +16,7 @@
 params.ref    = "/scratch/Scape/fred/GCF_003254395.2_Amel_HAv3.1_genomic.fna"
 params.fai    = "/scratch/Scape/fred/GCF_003254395.2_Amel_HAv3.1_genomic.fna.fai"
 params.dict   = "/scratch/Scape/fred/GCF_003254395.2_Amel_HAv3.1_genomic.dict"
+params.bwaidx = "/scratch/Scape/fred/GCF_003254395.2_Amel_HAv3.1_genomic.fna.*" 
 //params.reads  = "/project/Scape/Trimmomatic/Paired/*_{R1,R2}_paired.fastq.gz"
 params.reads  = "/scratch/Scape/fred/nf_test/*_{R1,R2}_paired.fastq.gz"
 params.outDir = "/scratch/Scape/fred/nf_test"
@@ -27,20 +28,23 @@ REFERENCE GENOME:
 ref    : ${params.ref}
 fai    : ${params.fai}
 dict   : ${params.dict}
+bwaidx : ${params.bwaidx}
 
 READS:
 reads  : ${params.reads}
 
+OUTPUT:
 outDir : ${params.outDir}
 ===============
 """
 
 // Define read channels
 
-reads_ch = Channel.fromFilePairs(params.reads)
+reads_ch  = Channel.fromFilePairs(params.reads)
+bwaidx_ch = Channel.fromPath(params.bwaidx) 
 
 // 1. PREPARE SEQUENCE DATA 
-
+/*
 process bwaIndex {
 
   label 'bwa'
@@ -57,6 +61,7 @@ process bwaIndex {
     bwa index ${ref}
     """
 }
+*/
 
 process bwaMapReads {
 
@@ -65,7 +70,7 @@ process bwaMapReads {
   
   input: 
     path ref from params.ref
-    path bwaIndex from bwaIndex_ch 
+    //tuple val(ext), path(bwaidx) from params.bwaidx
     tuple val(sampleId), path(reads) from reads_ch
     
   output:
