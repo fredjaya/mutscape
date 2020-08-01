@@ -1,20 +1,12 @@
 # mutscape
 
-Proof-of-concept pipeline to estimate _A. m. capensis_ mutation rates
-
-## Aims
-- To familiarise self with the processes and filter involved
-- Produce a filtered `.vcf` file of Larv09 for comparison with Fdrone
-- Produce full pipeline from `.fastq` to `.vcf` -> develop into multi-sample pipeline
-	- I/O files
-	- Resource usage
-
-## Template
-Following GATK 3.X best practices from Van der Auwera et al. (2013)
+Taking an iterative approach to pipeline development i.e. running nextflow processes individually to generate results, over developing a comprehensive pipeline with singularity.
 
 ## Protocol
 
-### 1. Preparing sequence data (`.fastq` to `.bam`)
+### Prior to nextflow
+
+Download reference genome, generate bwa and .fasta indexes
 ```
 # Download the reference genome for _Apis mellifera_
 cd /scratch/Scape/fred/
@@ -34,65 +26,26 @@ qsub scripts/2_ref_index.sh
 
 # Create dictionary
 qsub scripts/3_create_dict.sh
-
-# Map reads
-qsub scripts/4_bwa_mem.sh
-
-# Sort and convert to bam
-qsub scripts/5_sortsam.sh
-
-# Mark duplicates
-qsub scripts/6_markdups.sh
-
-# Realign target creator
-qsub scripts/7_rtc.sh
-
-# Realign reads around indels
-qsub scripts/8_realign_indels.sh
 ```
 
-### 2. Call SNPs on unrecalibrated data for BQSR
-According to [documentation](https://github.com/broadinstitute/gatk-docs/blob/master/gatk3-methods-and-algorithms/Base_Quality_Score_Recalibration_(BQSR).md).
+### Preparing sequence data (`.fastq` to `.bam`)
 
-ReduceReads skipped as deprecated in GATK3
-
+#### 1. Map trimmed reads to reference genome
 ```
-# If diploid (queen) use HaplotypeCaller to call all sites in discovery mode
-qsub scripts/9_unrecal_hap_call.sh
-
-# If haploid (drones) use UnifiedGenotyper
-qsub scripts/9_unrecal_ug.sh
+qsub run_scripts/1_bwaMapReads.sh   
 ```
 
-### 3. Base Quality Score Recalibration (BQSR)
-
-Plots deprecated?
-
+#### 2. Convert .sam into .sorted .bam
 ```
-# Generate tables of covariation for recalibration
-qsub scripts/10_bqsr_covar.sh
-
-# Generate covar tables after recalibration to compare with pre-bqsr  
-qsub scripts/11_post_bqsr.sh
-
-# Output bam file with recalibrated reads (PrintReads)
-qsub scripts/12_recalibrate.sh 
-
-# Generate plots for pre and post-bqsr recalibration
-qsub scripts/13_analyze_covar.sh
+qsub run_scripts/2_samtoolsSort.sh
 ```
 
-Notes:
-- Apply BSQR should only be used with the covariates table created from the same input BAM
-
-### 4. Call variants with HaplotypeCaller
+#### 3. Mark duplicates
 ```
-# Call variants with recalibrated .bam (diploid)
-qsub scripts/14_hap_call.sh
-
-# Call variants with recalibrated .bam (haploid)
-qsub scripts/14_ug.sh
-
+qsub run_scripts/3_markDuplicates.sh
 ```
 
-### 4. Variant Quality Score Recalibration (VQSR)
+#### 4. Mark regions for realignment around indels 
+```
+qsub run_scripts/4_realignTargetCreator.sh
+```
