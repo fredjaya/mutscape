@@ -11,7 +11,7 @@ Download reference genome, generate bwa and .fasta indexes
 # Download the reference genome for _Apis mellifera_
 cd /scratch/Scape/fred/
 rsync --copy-links --times --verbose \
-rsync://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/003/254/395/GCF_003254395.2_Amel_HAv3.1/GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz \ 
+rsync://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/004/254/395/GCF_003254395.2_Amel_HAv3.1/GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz \ 
 /scratch/Scape/fred/ # Artemis HPC
 
 # Decompress reference to avoid bgzip indexing issues
@@ -44,6 +44,31 @@ qsub run_scripts/2_samtoolsSort.sh
 ```
 qsub run_scripts/3_markDuplicates.sh
 ```
+First run: a few files aborted due to files exceeding walltime
+
+Remaining files run separately using (`sampleId_md_ch`). Nextflow might be mixing up the sample names. Renaming `*_marked_dups.bam` files based on @RG .bam headers (filename -> @RG ):
+- Larv01 -> Larv04
+- Larv02 -> Worker
+- Larv03 -> Larv09
+- Larv04 -> Larv08
+- Larv05 -> Larv01 
+- Larv06 -> Larv03
+- Larv07 -> Larv07 *
+- Larv08 -> Larv13
+- Larv09 -> Larv05
+- Larv10 -> Larv14
+- Larv11 -> Larv06
+- Larv12 -> Fdrone
+- Larv13 -> Larv10
+- 
+- Larv16 -> Worker
+- Larv15 -> Larv02
+- Worker -> Larv08
+- Fdrone -> Larv09
+
+Ended up rerunning MarkDuplicates without `${sampleId}` channels. 
+
+- [ ] Delete list above in future commit
 
 #### 4. Mark regions for realignment around indels 
 ```
