@@ -134,3 +134,53 @@ if (params.mode == 'markDuplicates') {
     }
 }
 
+if (params.mode == 'realignerTargetCreator') {
+// Mark targets to be realigned around indels
+    
+    params.fai       = "${params.ref}.fai"
+    params.dict      = "${params.scpath}/GCF_003254395.2_Amel_HAv3.1_genomic.dict"
+    params.markedbam = "${params.scpath}/*.sam_sorted.bam_marked_dups.{bam,bai}"
+    
+    markedbam_ch = Channel.fromFilePairs(params.markedbam)
+    
+    log.info """\
+    
+    ====================
+    ref       : ${params.ref}
+    fai       : ${params.fai}
+    dict      : ${params.dict}
+    markedbam : ${params.markedbam}
+    outdir    : ${params.outdir}
+    ====================
+    """
+    
+    process realignerTargetCreator {
+        
+        cpus = 1
+        memory = 8.GB
+        time = '1h'
+        publishDir "${params.outdir}" 
+        tag "$sampleId"
+    
+        input:
+            path ref  from params.ref
+            path fai  from params.fai 
+            path dict from params.dict
+            tuple val(sampleId), path(bamfiles) from markedbam_ch
+
+        output:
+            tuple val(sampleId), path("${sampleId}_target_intervals.list")
+ 
+        script:
+        def bam = bamfiles.findAll{ it.toString() =~ /.bam$/ }.join('')        
+        """
+        module load gatk/3.8.1
+
+        gatk -T RealignerTargetCreator \
+             -R ${ref} \
+             -I ${bam} \
+             -o ${sampleId}_target_intervals.list        
+        """
+    }
+}
+

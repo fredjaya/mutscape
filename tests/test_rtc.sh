@@ -2,14 +2,15 @@
 
 #PBS -P RDS-FSC-Scape-RW
 #PBS -l select=1:ncpus=1:mem=1GB
-#PBS -l walltime=72:00:00
+#PBS -l walltime=2:00:00
 
-WORKDIR=/scratch/Scape/fred/2008_manual
+WORKDIR=/scratch/Scape/fred/nf_tests
 NFDIR=/home/fjay0039/mutscape
 
 cd ${WORKDIR}
 module load nextflow/20.04.1
 
-nextflow run ${NFDIR}/main.nf \
-	--mode bwaMapReads \
+nextflow run ${NFDIR}/tests.nf \
+	--mode testRTC \
 	-profile pbs
+	
