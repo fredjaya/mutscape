@@ -47,23 +47,30 @@ if (params.mode == 'indelCh') {
                             return tuple(sampleId, file)
                     } 
     
-    markedbam_ch
-        .join(intervals_ch)
-        .println()
-
     // Combine {bam, bai} and {intervals} channels
     // Aim: [sampleId, [sampleId.bam, sampleId.bai], sampleId.list]
+    
+    realigntargets_ch = markedbam_ch.join(intervals_ch)
         
-/*
     process testIndelCh {
     
         input:
             path ref  from params.ref                            
             path fai  from params.fai                            
             path dict from params.dict                           
-            tuple val(sampleId), path(bamfiles), path(interval) from realigntargets_ch
+            tuple val(sampleId), path(bamfiles), path(intervals) from realigntargets_ch
+    
+        script:
+        def bam = bamfiles.findAll{ it.toString() =~ /.bam$/ }.join('')
+        """
+        echo $ref
+        echo $fai
+        echo $dict
+        echo $sampleId
+        echo $bam
+        echo $intervals
+        """
     }
-*/ 
 
 }
 
