@@ -72,5 +72,11 @@ Ended up rerunning MarkDuplicates without `${sampleId}` channels.
 
 #### 4. Mark regions for realignment around indels 
 ```
-qsub run_scripts/4_realignTargetCreator.sh
+qsub run_scripts/4_realignerTargetCreator.sh
+```
+Added tests here for inputting bam/bai files.
+
+#### 5. Realign regions around indels
+```
+qsub run_scripts/5_indelRealigner
 ```

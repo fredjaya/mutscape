@@ -1,10 +1,12 @@
 #!/usr/bin/env nextflow
 
 // Define global parameters 
-params.scpath = "/scratch/Scape/fred/2008_manual" 
-params.mode   = false // As processes are run individually, important to specify correct mode
-params.ref    = "${params.scpath}/GCF_003254395.2_Amel_HAv3.1_genomic.fna" 
-params.outdir = "${params.scpath}"
+params.scpath    = "/scratch/Scape/fred/2008_manual" 
+params.mode      = false // As processes are run individually, important to specify correct mode
+params.ref       = "${params.scpath}/GCF_003254395.2_Amel_HAv3.1_genomic.fna" 
+params.fai       = "${params.ref}.fai"
+params.markedbam = "${params.scpath}/*.sam_sorted.bam_marked_dups.{bam,bai}"
+params.outdir    = "${params.scpath}"
 
 if (params.mode == 'bwaMapReads') {
 // Map trimmed reads (paired) to reference genome
@@ -137,10 +139,8 @@ if (params.mode == 'markDuplicates') {
 if (params.mode == 'realignerTargetCreator') {
 // Mark targets to be realigned around indels
     
-    params.fai       = "${params.ref}.fai"
-    params.dict      = "${params.scpath}/GCF_003254395.2_Amel_HAv3.1_genomic.dict"
-    params.markedbam = "${params.scpath}/*.sam_sorted.bam_marked_dups.{bam,bai}"
-    
+    params.dict = "${params.scpath}/GCF_003254395.2_Amel_HAv3.1_genomic.dict"
+
     markedbam_ch = Channel.fromFilePairs(params.markedbam)
     
     log.info """\
@@ -172,6 +172,7 @@ if (params.mode == 'realignerTargetCreator') {
             tuple val(sampleId), path("${sampleId}_target_intervals.list")
  
         script:
+        // https://github.com/nextflow-io/nextflow/issues/1246#issuecomment-515919438 
         def bam = bamfiles.findAll{ it.toString() =~ /.bam$/ }.join('')        
         """
         module load gatk/3.8.1
@@ -184,3 +185,62 @@ if (params.mode == 'realignerTargetCreator') {
     }
 }
 
+if (params.mode == 'indelRealigner') {
+// Realign regions around indels
+    
+    params.intervals = "${params.scpath}/*_target_intervals.list"
+
+    markedbam_ch = Channel.fromFilePairs(params.markedbam)
+    intervals_ch = Channel
+                    .fromPath(params.intervals)
+                    .map { file ->
+                        def sampleId = file.name.toString().tokenize('_').get(0)
+                        return tuple(sampleId, intervals)
+                    }
+                    .groupTuple()
+    
+    // https://github.com/nextflow-io/patterns/blob/master/docs/process-into-groups.adoc
+     
+    log.info """\
+    
+    ====================
+    ref       : ${params.ref}
+    fai       : ${params.fai}
+    dict      : ${params.dict}
+    markedbam : ${params.markedbam}
+    intervals : ${params.intervals}
+    outdir    : ${params.outdir}
+    ====================
+    """
+    
+    process realignerTargetCreator {
+        
+        cpus = 2
+        memory = 14.GB
+        time = '5h'
+        publishDir "${params.outdir}" 
+        tag "$sampleId"
+    
+        input:
+            path ref  from params.ref
+            path fai  from params.fai 
+            path dict from params.dict
+            tuple val(sampleId), path(bamfiles) from markedbam_ch
+            path intervals from intervals_ch 
+        
+        output:
+            tuple val(sampleId), path("${sampleId}_target_intervals.list")
+ 
+        script:
+        def bam = bamfiles.findAll{ it.toString() =~ /.bam$/ }.join('')        
+        """
+        module load gatk/3.8.1
+
+        gatk -T IndelRealigner \
+             -R ${ref} \
+             -I ${bam} \
+             -targetIntervals ${intervals}
+             -o ${sampleId}_target_intervals.list        
+        """
+    }
+}
