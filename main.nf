@@ -5,9 +5,12 @@ params.scpath    = "/scratch/Scape/fred/2008_manual"
 params.mode      = false // As processes are run individually, important to specify correct mode
 params.ref       = "${params.scpath}/GCF_003254395.2_Amel_HAv3.1_genomic.fna" 
 params.fai       = "${params.ref}.fai"
+params.dict      = "${params.scpath}/GCF_003254395.2_Amel_HAv3.1_genomic.dict"
 params.markedbam = "${params.scpath}/*.sam_sorted.bam_marked_dups.{bam,bai}"
 params.outdir    = "${params.scpath}"
 
+markedbam_ch = Channel.fromFilePairs(params.markedbam)
+    
 if (params.mode == 'bwaMapReads') {
 // Map trimmed reads (paired) to reference genome
 
@@ -139,10 +142,6 @@ if (params.mode == 'markDuplicates') {
 if (params.mode == 'realignerTargetCreator') {
 // Mark targets to be realigned around indels
     
-    params.dict = "${params.scpath}/GCF_003254395.2_Amel_HAv3.1_genomic.dict"
-
-    markedbam_ch = Channel.fromFilePairs(params.markedbam)
-    
     log.info """\
     
     ====================
@@ -188,18 +187,15 @@ if (params.mode == 'realignerTargetCreator') {
 if (params.mode == 'indelRealigner') {
 // Realign regions around indels
     
-    params.intervals = "${params.scpath}/*_target_intervals.list"
-
-    markedbam_ch = Channel.fromFilePairs(params.markedbam)
-    intervals_ch = Channel
-                    .fromPath(params.intervals)
-                    .map { file ->
-                        def sampleId = file.name.toString().tokenize('_').get(0)
-                        return tuple(sampleId, intervals)
-                    }
-                    .groupTuple()
-    
-    // https://github.com/nextflow-io/patterns/blob/master/docs/process-into-groups.adoc
+    params.intervals = "${params.scpath}/*_target_intervals.list"                   
+    intervals_ch = Channel                                                          
+                    .fromPath(params.intervals)                                     
+                    .map { file ->                                                  
+                            def sampleId = file.name.toString().tokenize('_').get(0)
+                            return tuple(sampleId, file)                            
+                    }                                                               
+                                                                                    
+    realigntargets_ch = markedbam_ch.join(intervals_ch)                             
      
     log.info """\
     
@@ -212,35 +208,34 @@ if (params.mode == 'indelRealigner') {
     outdir    : ${params.outdir}
     ====================
     """
+                                                                                    
+    process indelRealigner {                                                           
     
-    process realignerTargetCreator {
-        
-        cpus = 2
-        memory = 14.GB
-        time = '5h'
-        publishDir "${params.outdir}" 
-        tag "$sampleId"
-    
-        input:
-            path ref  from params.ref
-            path fai  from params.fai 
-            path dict from params.dict
-            tuple val(sampleId), path(bamfiles) from markedbam_ch
-            path intervals from intervals_ch 
+    cpus = 2                                                                        
+    memory = 14.GB                                                                  
+    time = '5h'                                                                     
+    publishDir "${params.outdir}"                                                   
+    tag "$sampleId"                                                                 
+                                                                                    
+        input:                                                                      
+            path ref  from params.ref                                               
+            path fai  from params.fai                                               
+            path dict from params.dict                                              
+            tuple val(sampleId), path(bamfiles), path(intervals) from realigntargets_ch
         
         output:
-            tuple val(sampleId), path("${sampleId}_target_intervals.list")
- 
-        script:
-        def bam = bamfiles.findAll{ it.toString() =~ /.bam$/ }.join('')        
-        """
-        module load gatk/3.8.1
-
+            tuple val(sampleId), path("${sampleId}_realigned.bam")                                                                                   
+        script:                                                                     
+        def bam = bamfiles.findAll{ it.toString() =~ /.bam$/ }.join('')             
+        """                                                                         
+        module load gatk/3.8.1                                                      
+                                                                                    
         gatk -T IndelRealigner \
              -R ${ref} \
              -I ${bam} \
-             -targetIntervals ${intervals}
-             -o ${sampleId}_target_intervals.list        
-        """
-    }
+             -targetIntervals ${intervals} \
+             -o ${sampleId}_realigned.bam 
+        """                                                                         
+    }                                                                               
+ 
 }

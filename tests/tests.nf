@@ -51,7 +51,13 @@ if (params.mode == 'indelCh') {
     // Aim: [sampleId, [sampleId.bam, sampleId.bai], sampleId.list]
     
     realigntargets_ch = markedbam_ch.join(intervals_ch)
-        
+   
+    cpus = 2                     
+    memory = 14.GB               
+    time = '5h'                  
+    publishDir "${params.outdir}"
+    tag "$sampleId"              
+     
     process testIndelCh {
     
         input:
@@ -63,12 +69,13 @@ if (params.mode == 'indelCh') {
         script:
         def bam = bamfiles.findAll{ it.toString() =~ /.bam$/ }.join('')
         """
-        echo $ref
-        echo $fai
-        echo $dict
-        echo $sampleId
-        echo $bam
-        echo $intervals
+        module load gatk/3.8.1
+    
+        gatk -T IndelRealigner \
+             -R ${ref} \
+             -I ${bam} \
+             -targetIntervals ${intervals}
+             -o ${sampleId}_realigned.bam 
         """
     }
 
