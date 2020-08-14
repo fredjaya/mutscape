@@ -81,3 +81,48 @@ if (params.mode == 'indelCh') {
 
 }
 
+
+if (params.mode == 'hapCallSingle') {
+
+/*
+ * TEST: HaploptypeCaller works on a single bee sample
+ */
+    
+    params.realignedbam = "${params.scpath}/Fdrone_realigned.{bam,bai}"
+    realignedbam_ch = Channel.fromFilePairs(params.realignedbam)   
+
+    process testHapCallSingle {
+  
+        executor = 'pbs'
+        clusterOptions = '-P RDS-FSC-Scape-RW'
+        cpus = 4
+        memory = 16.GB
+        time = '12h'
+        publishDir "$params.outdir"
+        tag "$sampleId"
+ 
+        input:
+            path ref  from params.ref 
+            path fai  from params.fai 
+            path dict from params.dict
+            tuple val(sampleId), path(bamfiles) from realignedbam_ch
+
+        output:
+            tuple val(sampleId), path("${sampleId}_unrecal_conf_sites.vcf")
+
+        script:
+        def bam = bamfiles.findAll{ it.toString() =~ /.bam$/ }.join('')
+        """
+        module load gatk/3.8.1
+
+        gatk -T HaplotypeCaller \
+             -R ${ref} \
+             -I ${bam} \
+             --genotyping_mode DISCOVERY \
+             --output_mode EMIT_ALL_CONFIDENT_SITES \
+             -stand_call_conf 30 \
+             -o ${sampleId}_unrecal_conf_sites.vcf \
+             -nt 1 -nct 24 
+        """
+    }
+}

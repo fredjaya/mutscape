@@ -211,11 +211,11 @@ if (params.mode == 'indelRealigner') {
                                                                                     
     process indelRealigner {                                                           
     
-    cpus = 2                                                                        
-    memory = 14.GB                                                                  
-    time = '5h'                                                                     
-    publishDir "${params.outdir}"                                                   
-    tag "$sampleId"                                                                 
+        cpus = 2                                                                        
+        memory = 14.GB                                                                  
+        time = '5h'                                                                     
+        publishDir "${params.outdir}"                                                   
+        tag "$sampleId"                                                                 
                                                                                     
         input:                                                                      
             path ref  from params.ref                                               
@@ -224,7 +224,9 @@ if (params.mode == 'indelRealigner') {
             tuple val(sampleId), path(bamfiles), path(intervals) from realigntargets_ch
         
         output:
-            tuple val(sampleId), path("${sampleId}_realigned.bam")                                                                                   
+            tuple val(sampleId), path("${sampleId}_realigned.bam") 
+            tuple val(sampleId), path("${sampleId}_realigned.bai") 
+
         script:                                                                     
         def bam = bamfiles.findAll{ it.toString() =~ /.bam$/ }.join('')             
         """                                                                         
@@ -239,3 +241,57 @@ if (params.mode == 'indelRealigner') {
     }                                                                               
  
 }
+
+if (params.mode == 'haplotypeCallerUnrecal') {
+// Call confident sites for recalibration 
+    
+    params.realignedbam = "${params.scpath}/*_realigned.{bam,bai}"
+    realignedbam_ch = Channel.fromFilePairs(params.realignedbam)
+ 
+    log.info """\
+    
+    ====================
+    ref          : ${params.ref}
+    fai          : ${params.fai}
+    dict         : ${params.dict}
+    realignedbam : ${params.markedbam}
+    outdir       : ${params.outdir}
+    ====================
+    """
+                                                                                    
+    process haplotypeCallerUnrecal {                                                           
+    
+        cpus = 4                                                           
+        memory = 16.GB                                                     
+        time = '12h'                                                       
+        publishDir "$params.outdir"                                        
+        tag "$sampleId"                                                    
+                                                                           
+        input:                                                             
+            path ref  from params.ref                                      
+            path fai  from params.fai                                      
+            path dict from params.dict                                     
+            tuple val(sampleId), path(bamfiles) from realignedbam_ch       
+                                                                           
+        output:                                                            
+            tuple val(sampleId), path("${sampleId}_unrecal_conf_sites.vcf")
+                                                                           
+        script:                                                            
+        def bam = bamfiles.findAll{ it.toString() =~ /.bam$/ }.join('')    
+        """                                                                
+        module load gatk/3.8.1                                             
+                                                                           
+        gatk -T HaplotypeCaller \
+             -R ${ref} \
+             -I ${bam} \
+             --genotyping_mode DISCOVERY \
+             --output_mode EMIT_ALL_CONFIDENT_SITES \
+             -stand_call_conf 30 \
+             -o ${sampleId}_unrecal_conf_sites.vcf \
+             -nt 1 -nct 24                                                 
+        """                                                                
+         
+    }                                                                               
+ 
+}
+
