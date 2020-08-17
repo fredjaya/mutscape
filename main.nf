@@ -1,16 +1,18 @@
 #!/usr/bin/env nextflow
 
 // Define global parameters 
-params.scpath    = "/scratch/Scape/fred/2008_manual" 
-params.mode      = false // As processes are run individually, important to specify correct mode
-params.ref       = "${params.scpath}/GCF_003254395.2_Amel_HAv3.1_genomic.fna" 
-params.fai       = "${params.ref}.fai"
-params.dict      = "${params.scpath}/GCF_003254395.2_Amel_HAv3.1_genomic.dict"
-params.markedbam = "${params.scpath}/*.sam_sorted.bam_marked_dups.{bam,bai}"
-params.outdir    = "${params.scpath}"
-
-markedbam_ch = Channel.fromFilePairs(params.markedbam)
+params.scpath       = "/scratch/Scape/fred/2008_manual" 
+params.mode         = false // As processes are run individually, important to specify correct mode
+params.ref          = "${params.scpath}/GCF_003254395.2_Amel_HAv3.1_genomic.fna" 
+params.fai          = "${params.ref}.fai"
+params.dict         = "${params.scpath}/GCF_003254395.2_Amel_HAv3.1_genomic.dict"
+params.markedbam    = "${params.scpath}/*.sam_sorted.bam_marked_dups.{bam,bai}"
+params.realignedbam = "${params.scpath}/*_realigned.{bam,bai}"
+params.outdir       = "${params.scpath}"
     
+markedbam_ch    = Channel.fromFilePairs(params.markedbam)
+realignedbam_ch = Channel.fromFilePairs(params.realignedbam)
+ 
 if (params.mode == 'bwaMapReads') {
 // Map trimmed reads (paired) to reference genome
 
@@ -209,14 +211,14 @@ if (params.mode == 'indelRealigner') {
     ====================
     """
                                                                                     
-    process indelRealigner {                                                           
-    
-        cpus = 2                                                                        
-        memory = 14.GB                                                                  
-        time = '5h'                                                                     
-        publishDir "${params.outdir}"                                                   
-        tag "$sampleId"                                                                 
-                                                                                    
+    process indelRealigner {
+
+        cpus = 2
+        memory = 14.GB
+        time = '5h'
+        publishDir "${params.outdir}"
+        tag "$sampleId"
+
         input:                                                                      
             path ref  from params.ref                                               
             path fai  from params.fai                                               
@@ -244,26 +246,23 @@ if (params.mode == 'indelRealigner') {
 
 if (params.mode == 'haplotypeCallerUnrecal') {
 // Call confident sites for recalibration 
-    
-    params.realignedbam = "${params.scpath}/*_realigned.{bam,bai}"
-    realignedbam_ch = Channel.fromFilePairs(params.realignedbam)
- 
+     
     log.info """\
     
     ====================
     ref          : ${params.ref}
     fai          : ${params.fai}
     dict         : ${params.dict}
-    realignedbam : ${params.markedbam}
+    realignedbam : ${params.realignedbam}
     outdir       : ${params.outdir}
     ====================
     """
                                                                                     
-    process haplotypeCallerUnrecal {                                                           
+    process haplotypeCallerUnrecal {                                            
     
         cpus = 4                                                           
         memory = 16.GB                                                     
-        time = '12h'                                                       
+        time = '14h'                                                       
         publishDir "$params.outdir"                                        
         tag "$sampleId"                                                    
                                                                            
@@ -295,3 +294,61 @@ if (params.mode == 'haplotypeCallerUnrecal') {
  
 }
 
+if (params.mode == 'bqsrTable') {
+// Generate table of covariance for bqsr
+
+    params.knownsites = "${params.scpath}/*_unrecal_conf_sites.vcf"    
+    knownsites_ch = Channel
+                    .fromPath(params.knownsites)
+                    .map { file ->
+                            def sampleId = file.name.toString().tokenize('_').get(0)
+                            return tuple(sampleId, file)
+                    }
+    bsqr_ch = realignedbam_ch.join(knownsites_ch)                             
+
+    log.info """\
+    
+    ====================
+    ref          : ${params.ref}
+    fai          : ${params.fai}
+    dict         : ${params.dict}
+    realignedbam : ${params.realignedbam}
+    knownsites   : ${params.knownsites}
+    outdir       : ${params.outdir}
+    ====================
+    """
+                                                                                    
+    process bqsrTable {                                            
+    
+        cpus = 2
+        memory = 12.GB                                                     
+        time = '4h'                                                       
+        publishDir "$params.outdir"                                        
+        tag "$sampleId"                                                    
+                                                                           
+        input:                                                             
+            path ref  from params.ref                                      
+            path fai  from params.fai                                      
+            path dict from params.dict                                     
+            tuple val(sampleId), path(bamfiles), path(knownsites) from bsqr_ch      
+                                                                        
+        output:                                                            
+            tuple val(sampleId), path("${sampleId}_unrecal_conf_sites.vcf.idx")
+            tuple val(sampleId), path("${sampleId}_pre_recal.table")
+                                                                           
+        script:                                                            
+        def bam = bamfiles.findAll{ it.toString() =~ /.bam$/ }.join('')    
+        """                                                                
+        module load gatk/3.8.1                                             
+                                                                           
+        gatk -T BaseRecalibrator \
+             -R ${ref} \
+             -I ${bam} \
+             -knownSites ${knownsites} \
+             -o ${sampleId}_pre_recal.table \
+             -nt 1 -nct 24
+        """                                                                
+         
+    }
+
+}
