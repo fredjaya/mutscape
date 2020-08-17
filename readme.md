@@ -60,3 +60,8 @@ qsub run_scripts/5_indelRealigner
 ```
 qsub run_scripts/6_haplotypeCallerUnrecal
 ```
+
+### 7. Generate covariate tables for BQSR
+```
+qsub run_scripts/7_bsqrTable
+```

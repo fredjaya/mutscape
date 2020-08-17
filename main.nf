@@ -352,3 +352,64 @@ if (params.mode == 'bqsrTable') {
     }
 
 }
+
+if (params.mode == 'recalibrateBQS') {
+// Recalibrate base quality scores 
+
+    params.table = "${params.scpath}/*_pre_recal.table"
+    table_ch = Channel
+                .fromPath(params.table)
+                .map { file ->
+                        def sampleId = file.name.toString().tokenize('_').get(0)
+                        return tuple(sampleId, file)
+                    }
+    
+    recal_ch = realignedbam_ch.join(table_ch)
+
+    log.info """\
+    
+    ====================
+    ref          : ${params.ref}
+    fai          : ${params.fai}
+    dict         : ${params.dict}
+    realignedbam : ${params.realignedbam}
+    table        : ${params.table}
+    outdir       : ${params.outdir}
+    ====================
+    """
+                                                                                    
+    process recalibrateBQS {                                            
+    
+        cpus = 3
+        memory = 18.GB                                                     
+        time = '3h'                                                       
+        publishDir "$params.outdir"                                        
+        tag "$sampleId"                                                    
+                                                                           
+        input:                                                             
+            path ref  from params.ref                                      
+            path fai  from params.fai                                      
+            path dict from params.dict                                     
+            tuple val(sampleId), path(bamfiles), path(table) from recal_ch      
+                                                                        
+        output:                                                            
+            tuple val(sampleId), path("${sampleId}_recalibrated_reads.bam")
+            tuple val(sampleId), path("${sampleId}_recalibrated_reads.bai")
+                                                                           
+        script:                                                            
+        def bam = bamfiles.findAll{ it.toString() =~ /.bam$/ }.join('')    
+        """                                                                
+        module load gatk/3.8.1                                             
+                                                                           
+        gatk -T PrintReads \
+             -R ${ref} \
+             -I ${bam} \
+             -BQSR ${table} \
+             -o ${sampleId}_recalibrated_reads.bam \
+             -nt 1 -nct 3
+        """                                                                
+         
+    }
+
+}
+
