@@ -274,7 +274,7 @@ if (params.mode == 'haplotypeCallerUnrecal') {
                                                                            
         output:                                                            
             tuple val(sampleId), path("${sampleId}_unrecal_conf_sites.vcf")
-                                                                           
+            // Should've added output for *.vcf.idx -> bsqrTable made new ones                                                                
         script:                                                            
         def bam = bamfiles.findAll{ it.toString() =~ /.bam$/ }.join('')    
         """                                                                
@@ -380,7 +380,7 @@ if (params.mode == 'recalibrateBQS') {
                                                                                     
     process recalibrateBQS {                                            
     
-        cpus = 3
+        cplpus = 3
         memory = 18.GB                                                     
         time = '3h'                                                       
         publishDir "$params.outdir"                                        
@@ -413,3 +413,56 @@ if (params.mode == 'recalibrateBQS') {
 
 }
 
+if (params.mode == 'callVariants') {
+// Call SNPs and indels from recalibrated reads
+
+    params.recalbam = "${params.scpath}/*_recalibrated_reads.{bam,bai}"
+    recalbam_ch = Channel.fromFilePairs(params.recalbam)
+     
+    log.info """\
+    
+    ====================
+    ref      : ${params.ref}
+    fai      : ${params.fai}
+    dict     : ${params.dict}
+    recalbam : ${params.recalbam}
+    outdir   : ${params.outdir}
+    ====================
+    """
+                                                                                    
+    process callVariants {                                            
+    
+        cpus = 4                                                           
+        memory = 16.GB                                                     
+        time = '14h'                                                       
+        publishDir "$params.outdir"                                        
+        tag "$sampleId"                                                    
+                                                                           
+        input:                                                             
+            path ref  from params.ref                                      
+            path fai  from params.fai                                      
+            path dict from params.dict                                     
+            tuple val(sampleId), path(bamfiles) from recalbam_ch       
+                                                                           
+        output:                                                            
+            tuple val(sampleId), path("${sampleId}_raw_variants.vcf")
+            // should've added output for *.vcf.idx -> made symlinks manually
+
+        script:                                                            
+        def bam = bamfiles.findAll{ it.toString() =~ /.bam$/ }.join('')    
+        """                                                                
+        module load gatk/3.8.1                                             
+                                                                           
+        gatk -T HaplotypeCaller \
+             -R ${ref} \
+             -I ${bam} \
+             --genotyping_mode DISCOVERY \
+             --output_mode EMIT_ALL_SITES \
+             -stand_call_conf 10 \
+             -o ${sampleId}_raw_variants.vcf \
+             -nt 1 -nct 24                                                 
+        """                                                                
+         
+    }                                                                               
+ 
+}
