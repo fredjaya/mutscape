@@ -92,9 +92,7 @@ if (params.mode == 'hapCallSingle') {
     realignedbam_ch = Channel.fromFilePairs(params.realignedbam)   
 
     process testHapCallSingle {
-  
-        executor = 'pbs'
-        clusterOptions = '-P RDS-FSC-Scape-RW'
+   
         cpus = 4
         memory = 16.GB
         time = '12h'
@@ -126,3 +124,80 @@ if (params.mode == 'hapCallSingle') {
         """
     }
 }
+
+if (params.mode == 'testOutputSNPsIndels') {
+
+    params.rawVariants = "${params.outdir}/*_raw_variants.vcf"
+    rawsnps_ch = Channel
+                    .fromPath(params.rawVariants)
+                    .map { file ->
+                            def sampleId = file.name.toString().tokenize('_').get(0)
+                            return tuple(sampleId, file) 
+                    }
+
+    rawindels_ch = Channel
+                    .fromPath(params.rawVariants)
+                    .map { file ->
+                            def sampleId = file.name.toString().tokenize('_').get(0)
+                            return tuple(sampleId, file) 
+                    }
+
+    process outputSNPs {
+   
+        cpus = 4
+        memory = 16.GB
+        time = '2h'
+        publishDir "$params.outdir"
+        tag "$sampleId"
+ 
+        input:
+            path ref  from params.ref 
+            path fai  from params.fai 
+            path dict from params.dict
+            tuple val(sampleId), path(rawVariants) from rawsnps_ch
+
+        output:
+            tuple val(sampleId), path("${sampleId}_raw_snps.vcf")
+
+        script:
+        """
+        module load gatk/3.8.1
+
+        gatk -T SelectVariants \
+             -R ${ref} \
+             -V ${rawVariants} \
+             -selectType SNP \
+             -o ${sampleId}_raw_snps.vcf \
+        """
+    }
+
+    process outputIndels {
+   
+        cpus = 4
+        memory = 16.GB
+        time = '2h'
+        publishDir "$params.outdir"
+        tag "$sampleId"
+ 
+        input:
+            path ref  from params.ref 
+            path fai  from params.fai 
+            path dict from params.dict
+            tuple val(sampleId), path(rawVariants) from rawindels_ch 
+
+        output:
+            tuple val(sampleId), path("${sampleId}_raw_indels.vcf")
+
+        script:
+        """
+        module load gatk/3.8.1
+
+        gatk -T SelectVariants \
+             -R ${ref} \
+             -V ${rawVariants} \
+             -selectType INDEL \
+             -o ${sampleId}_raw_indels.vcf \
+        """
+    }
+}
+

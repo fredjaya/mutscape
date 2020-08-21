@@ -74,3 +74,4 @@ qsub run_scripts/8_recalibrateBQS.sh
 ### 9. Call SNPs and indels from recalibrated reads 
 ```
 qsub run_scripts/9_callVariants.sh
+```
