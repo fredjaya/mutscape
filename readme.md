@@ -3,7 +3,7 @@ Variant calling pipeline to estimate *A. m. capensis* mutation rates.
 
 Took an iterative approach to pipeline development i.e. running nextflow processes individually to generate results, over developing a comprehensive pipeline with singularity (e.g. `nf-desktop` branch).
 
-## Protocol
+## Variant calling 
 Following GATK 3.X best practices from Van der Auwera et al. (2013)
 
 ### Downloading and indexing the reference genome
@@ -76,9 +76,23 @@ qsub run_scripts/9_callVariants.sh
 
 ### Variant introspection and filtering
 ```
+DIR=/home/meep/Desktop/People/fred/Dropbox/meep/bee/02_working/2009_filter_vcf
+
 # Merge individual vcf files into a single multiple-sample vcf
 bin/combineVariants.sh
 
+# Remove Fdrone and remove all sites that did not pass filters
+bin/excludeFiltered.sh
+
+# Count number of variants that passed filters
+bin/countVariants $DIR/combined_excludeFiltered.vcf $DIR/combined_excludeFiltered.stats
+
+# Output QUAL and DP
+Rscript bin/plotBcfStats.R $DIR/combined_excludeFiltered.stats
+```
+
+TBA:
+```
 # Remove sites where variants are all homozygous for the reference allele (0|0) 
 bin/excludeNonVariants.sh
 
