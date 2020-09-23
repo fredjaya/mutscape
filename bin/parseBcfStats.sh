@@ -4,7 +4,7 @@ INFO=('SN', 'QUAL', 'DP')
 VCF=$1
 
 if [[ $# != 1 ]]; then
-  echo "Usage: $0 [.vcf]"
+  echo "Usage: $0 [.stats]"
   exit 1
 fi
 

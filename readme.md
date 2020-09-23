@@ -74,7 +74,9 @@ qsub run_scripts/8_recalibrateBQS.sh
 qsub run_scripts/9_callVariants.sh
 ```
 
-### Variant introspection and filtering
+---
+
+## Variant introspection and hard-filtering
 ```
 DIR=/home/meep/Desktop/People/fred/Dropbox/meep/bee/02_working/2009_filter_vcf
 
@@ -91,11 +93,26 @@ bin/countVariants $DIR/combined_excludeFiltered.vcf $DIR/combined_excludeFiltere
 Rscript bin/plotBcfStats.R $DIR/combined_excludeFiltered.stats
 ```
 
-TBA:
-```
-# Remove sites where variants are all homozygous for the reference allele (0|0) 
-bin/excludeNonVariants.sh
+---
 
-# Remove sites contain all common variants (e.g. all 0/0, 0/1, 1/1)
-bin/filterCommonVariants.sh
+## Identifying candidate mutations
 ```
+# Remove sites where variants are identical across samples
+bin/excludeCommonVariants.sh
+bin/countVariants $DIR/combined_exFiltered_exCommons.vcf $DIR/combined_exFiltered_exCommons.stats
+bin/parseBcfStats.sh $DIR/combined_exFiltered_exCommons.stats
+Rscript bin/plotBcfStats.R $DIR/combined_exFiltered_exCommons.stats
+
+# Remove sites with "NO_VARIATION"
+bin/excludeNonVariants.sh
+bin/countVariants $DIR/combined_exFiltered_exCommons_exNonVar.vcf $DIR/combined_exFiltered_exCommons_exNonVar.stats
+bin/parseBcfStats.sh $DIR/combined_exFiltered_exCommons_exNonVar.stats  
+Rscript bin/plotBcfStats.R $DIR/combined_exFiltered_exCommons_exNonVar.stats
+
+# Filter variants where QUAL ≥ 30 across 90% of samples (Liu et al., 2017)
+vcftools --vcf $DIR/combined_exFiltered_exCommons_exNonVar.vcf --minQ 30 --max-missing 0.1 --recode --recode-INFO-all --out $DIR/minQ30_maxmissing0.1.vcf
+bin/countVariants $DIR/minQ30_maxmissing0.1.recode.vcf $DIR/minQ30_maxmissing0.1.recode.stats
+bin/parseBcfStats.sh $DIR/minQ30_maxmissing0.1.recode.stats
+Rscript bin/plotBcfStats.R $DIR/minQ30_maxmissing0.1.recode.stats
+```
+
