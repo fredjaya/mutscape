@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import unittest
+from min_geno import match_gt
 
 class test_minGeno(unittest.TestCase):
     def setUp(self):

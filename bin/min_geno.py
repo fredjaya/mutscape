@@ -68,10 +68,9 @@ def parse_vcf(input_vcf, output_vcf):
                     write_site(writer, pass_filter, line)
     return
 
-parser = argparse.ArgumentParser()
-parser.add_argument("vcf_input")
-parser.add_argument("vcf_output")
-args = parser.parse_args()
-
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("vcf_input")
+    parser.add_argument("vcf_output")
+    args = parser.parse_args()
     parse_vcf(args.vcf_input, args.vcf_output)
