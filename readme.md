@@ -76,43 +76,59 @@ qsub run_scripts/9_callVariants.sh
 
 ---
 
-## Variant introspection and hard-filtering
+## Variant hard-filtering and identification of candidate mutations
 ```
-DIR=/home/meep/Desktop/People/fred/Dropbox/meep/bee/02_working/2009_filter_vcf
+export DIR=/home/meep/Desktop/People/fred/Dropbox/meep/bee/02_working/2009_filter_vcf2
 
 # Merge individual vcf files into a single multiple-sample vcf
 bin/combineVariants.sh
 
 # Remove Fdrone and remove all sites that did not pass filters
 bin/excludeFiltered.sh
-
-# Count number of variants that passed filters
 bin/countVariants $DIR/combined_excludeFiltered.vcf $DIR/combined_excludeFiltered.stats
-
-# Output QUAL and DP
 Rscript bin/plotBcfStats.R $DIR/combined_excludeFiltered.stats
-```
-
----
-
-## Identifying candidate mutations
-```
-# Remove sites where variants are identical across samples
-bin/excludeCommonVariants.sh
-bin/countVariants $DIR/combined_exFiltered_exCommons.vcf $DIR/combined_exFiltered_exCommons.stats
-bin/parseBcfStats.sh $DIR/combined_exFiltered_exCommons.stats
-Rscript bin/plotBcfStats.R $DIR/combined_exFiltered_exCommons.stats
 
 # Remove sites with "NO_VARIATION"
-bin/excludeNonVariants.sh
-bin/countVariants $DIR/combined_exFiltered_exCommons_exNonVar.vcf $DIR/combined_exFiltered_exCommons_exNonVar.stats
-bin/parseBcfStats.sh $DIR/combined_exFiltered_exCommons_exNonVar.stats  
-Rscript bin/plotBcfStats.R $DIR/combined_exFiltered_exCommons_exNonVar.stats
+bin/excludeNonVariants.sh $DIR/combined_excludeFiltered.vcf $DIR/combined_exFil_exNonVar.vcf
+bin/get_stats.sh $DIR/combined_exFil_exNonVar.vcf $DIR/combined_exFil_exNonVar.stats
 
-# Filter variants where QUAL ≥ 30 across 90% of samples (Liu et al., 2017)
-vcftools --vcf $DIR/combined_exFiltered_exCommons_exNonVar.vcf --minQ 30 --max-missing 0.1 --recode --recode-INFO-all --out $DIR/minQ30_maxmissing0.1.vcf
-bin/countVariants $DIR/minQ30_maxmissing0.1.recode.vcf $DIR/minQ30_maxmissing0.1.recode.stats
-bin/parseBcfStats.sh $DIR/minQ30_maxmissing0.1.recode.stats
-Rscript bin/plotBcfStats.R $DIR/minQ30_maxmissing0.1.recode.stats
+# SNP Sites: 5532947
+# Indel Sites: 1522511
+# Called SNPs: 
+# NO_CALL SNPs:
+
+# Output SNPs only
+bin/removeIndels.sh $DIR/combined_exFil_exNonVar.vcf $DIR/combined_exFil_exNonVar_SNPs.vcf
+bin/get_stats.sh $DIR/combined_exFil_exNonVar_SNPs.vcf $DIR/combined_exFil_exNonVar_SNPs.stats
+bin/countSNPCalls.sh $DIR/combined_exFil_exNonVar_SNPs.vcf
+
+# SNP Sites: 3121875
+# Called SNPs: 43692913
+# NO_CALL SNPs: 3135213
+
+# Retain sites with one unique genotype
+python3 bin/genofreq.py $DIR/combined_exFil_exNonVar_SNPs.vcf $DIR/combined_exFil_exNonVar_SNPs_gtFreq.vcf
+bin/get_stats.sh $DIR/combined_exFil_exNonVar_SNPs_gtFreq.vcf $DIR/combined_exFil_exNonVar_SNPs_gtFreq.stats
+bin/countSNPCalls.sh $DIR/combined_exFil_exNonVar_SNPs_gtFreq.vcf
+
+# SNP Sites: 13626
+# Called SNPs: 86830
+# NO_CALL SNPs: 117561
+
+# Retain SNPs with GT depth >= 5 and GT quality >= 30
+vcftools --vcf $DIR/combined_exFil_exNonVar_SNPs_gtFreq.vcf --minDP 5 --minGQ 30 --recode --recode-INFO-all --out $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30
+bin/countSNPCalls.sh $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30.recode.vcf
+
+# SNP Sites: 13626
+# Called SNPs: 62600
+# NO_CALL SNPs: 141791
+
+# Retain sites with one unique genotype
+python3 bin/genofreq.py $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30.recode.vcf $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq.vcf
+bin/get_stats.sh $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq.vcf $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq.stats
+bin/countSNPCalls.sh $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq.vcf
+
+# SNP Sites: 5704
+# Called SNPs: 
+# Retain sites with Worker calls
 ```
-

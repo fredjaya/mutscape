@@ -7,7 +7,6 @@ Created on Tue Sep 22 13:49:19 2020
 """
 
 import argparse
-import os
 import re
 from collections import Counter
 
