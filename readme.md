@@ -107,7 +107,7 @@ bin/countSNPCalls.sh $DIR/combined_exFil_exNonVar_SNPs.vcf
 # NO_CALL SNPs: 3135213
 
 # Retain sites with one unique genotype
-python3 bin/genofreq.py $DIR/combined_exFil_exNonVar_SNPs.vcf $DIR/combined_exFil_exNonVar_SNPs_gtFreq.vcf
+python3 bin/genofreq.py genofreq $DIR/combined_exFil_exNonVar_SNPs.vcf $DIR/combined_exFil_exNonVar_SNPs_gtFreq.vcf
 bin/get_stats.sh $DIR/combined_exFil_exNonVar_SNPs_gtFreq.vcf $DIR/combined_exFil_exNonVar_SNPs_gtFreq.stats
 bin/countSNPCalls.sh $DIR/combined_exFil_exNonVar_SNPs_gtFreq.vcf
 
@@ -124,11 +124,20 @@ bin/countSNPCalls.sh $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30.recode.vc
 # NO_CALL SNPs: 141791
 
 # Retain sites with one unique genotype
-python3 bin/genofreq.py $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30.recode.vcf $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq.vcf
+python3 bin/genofreq.py genofreq $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30.recode.vcf $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq.vcf
 bin/get_stats.sh $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq.vcf $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq.stats
 bin/countSNPCalls.sh $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq.vcf
 
 # SNP Sites: 5704
-# Called SNPs: 
+# Called SNPs: 20548
+# NO_CALL SNPs: 65013
+
 # Retain sites with Worker calls
+python3 bin/genofreq.py orphan $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq.vcf $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq_workerSites.vcf
+bin/get_stats.sh $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq_workerSites.vcf $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq_workerSites.stats
+bin/countSNPCalls.sh $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq_workerSites.vcf
+
+# SNP Sites: 995
+# Called SNPs: 13377
+# NO_CALL_SNPs: 1549
 ```

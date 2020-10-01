@@ -10,6 +10,13 @@ import argparse
 import re
 from collections import Counter
 
+def match_gt(gt):
+    """
+    Regex for genotype
+    """
+    r = re.compile("(\d+\/\d+)|(\.\/\.)")
+    return r.match(gt).group(0)
+
 def count_genotypes(gt_info):
     """
     Get count of unique genotypes per sample
@@ -26,13 +33,6 @@ def count_genotypes(gt_info):
         exit()
 
     return dict(Counter(l))
-
-def match_gt(gt):
-    """
-    Regex for genotype
-    """
-    r = re.compile("(\d+\/\d+)|(\.\/\.)")
-    return r.match(gt).group(0)
 
 def site_pass(gt_counts):
     """
@@ -51,7 +51,36 @@ def write_site(writer, pass_filter, line):
         writer.writelines(line)
     return
 
-def parse_vcf(input_vcf, output_vcf):
+def genofreq(gt_info, writer, line):
+    """
+    Retain only sites where a unique genotype appears once
+    """
+    gt_counts = count_genotypes(gt_info)
+    pass_filter = site_pass(gt_counts)
+    write_site(writer, pass_filter, line)
+
+def get_worker_gt_info(gt_info):
+    return gt_info[14:15]
+
+def retain_worker(gt):
+    """
+    Write site to new file if Worker genotype != ./.
+    """
+    if not gt == "./.":
+        return True
+    return False
+
+def remove_orphan_sites(gt_info, writer, line):
+    """
+    Retain only sites where the Worker has a called a SNP
+    """
+    worker_gt_info = get_worker_gt_info(gt_info)
+    worker_gt = match_gt(worker_gt_info[0])
+    pass_filter = retain_worker(worker_gt)
+    write_site(writer, pass_filter, line)
+    return
+
+def parse_vcf(apply_filter, input_vcf, output_vcf):
     """
     Iterate through each variant and write to new file if passes filters
     """
@@ -60,16 +89,33 @@ def parse_vcf(input_vcf, output_vcf):
             for line in reader:
                 if line[0] == "#":
                     writer.writelines(line)
+                
                 else:
                     gt_info = line.split("\t")[9:]
-                    gt_counts = count_genotypes(gt_info)
-                    pass_filter = site_pass(gt_counts)
-                    write_site(writer, pass_filter, line)
+                    
+                    if apply_filter == "genofreq":
+                        genofreq(gt_info, writer, line)
+                    
+                    elif apply_filter == "orphan":
+                        remove_orphan_sites(gt_info, writer, line)
     return
 
 if __name__ == '__main__':
+    """
+    Set arguments
+    """
     parser = argparse.ArgumentParser()
+    parser.add_argument("filter", help = "genofreq or orphan")
     parser.add_argument("vcf_input")
     parser.add_argument("vcf_output")
     args = parser.parse_args()
-    parse_vcf(args.vcf_input, args.vcf_output)
+    
+    """
+    Run
+    """
+    if args.filter == "genofreq":
+        print("Retaining sites with a unique genotype == 1")
+    elif args.filter == "orphan":
+        print("Retaining sites where Worker has a SNP called")
+
+    parse_vcf(args.filter, args.vcf_input, args.vcf_output)
