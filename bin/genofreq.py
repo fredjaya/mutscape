@@ -38,10 +38,13 @@ def site_pass(gt_counts):
     """
     Identify sites that have a single unique genotype
     """
+    pass_filter = False
+    
     for key, value in gt_counts.items():
         if value == 1 and not key == "./.":
-            return True
-        return False 
+            pass_filter = True
+            
+    return pass_filter
 
 def write_site(writer, pass_filter, line):
     """
