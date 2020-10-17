@@ -380,10 +380,10 @@ if (params.mode == 'recalibrateBQS') {
                                                                                     
     process recalibrateBQS {                                            
     
-        cplpus = 3
+        cpus = 3
         memory = 18.GB                                                     
         time = '3h'                                                       
-        publishDir "$params.outdir"                                        
+        publishDir "$params.outdir", mode: 'move'
         tag "$sampleId"                                                    
                                                                            
         input:                                                             
@@ -435,7 +435,7 @@ if (params.mode == 'callVariants') {
         cpus = 4                                                           
         memory = 16.GB                                                     
         time = '14h'                                                       
-        publishDir "$params.outdir"                                        
+        publishDir "$params.outdir", mode: 'move'
         tag "$sampleId"                                                    
                                                                            
         input:                                                             

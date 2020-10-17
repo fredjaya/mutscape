@@ -4,7 +4,7 @@
 #PBS -l select=1:ncpus=1:mem=1GB
 #PBS -l walltime=00:5:00
 
-DIR='/scratch/Scape/fred/rtc_idx'
+DIR=/scratch/Scape/fred/2008_manual
 
 module load bwa/0.7.17
 

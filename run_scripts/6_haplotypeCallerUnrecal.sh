@@ -12,5 +12,4 @@ module load nextflow/20.04.1
 
 nextflow run ${NFDIR}/main.nf \
 	--mode haplotypeCallerUnrecal \
-	-profile pbs \
-	-resume
+	-profile pbs
