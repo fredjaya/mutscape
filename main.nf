@@ -1,11 +1,12 @@
 #!/usr/bin/env nextflow
 
 // Define global parameters 
-params.scpath       = "/scratch/Scape/fred/2008_manual" 
+params.scpath       = "/scratch/Scape/fred/2010_gvcf" 
+params.gatk         = "/home/fjay0039/gatk-4.1.8.1/gatk"
 params.mode         = false // As processes are run individually, important to specify correct mode
-params.ref          = "${params.scpath}/GCF_003254395.2_Amel_HAv3.1_genomic.fna" 
+params.ref          = "${params.scpath}/../GCF_003254395.2_Amel_HAv3.1_genomic.fna" 
 params.fai          = "${params.ref}.fai"
-params.dict         = "${params.scpath}/GCF_003254395.2_Amel_HAv3.1_genomic.dict"
+params.dict         = "${params.scpath}/../GCF_003254395.2_Amel_HAv3.1_genomic.dict"
 params.markedbam    = "${params.scpath}/*.sam_sorted.bam_marked_dups.{bam,bai}"
 params.realignedbam = "${params.scpath}/*_realigned.{bam,bai}"
 params.outdir       = "${params.scpath}"
@@ -413,10 +414,10 @@ if (params.mode == 'recalibrateBQS') {
 
 }
 
-if (params.mode == 'callVariants') {
-// Call SNPs and indels from recalibrated reads
+if (params.mode == 'gvcf') {
+// Call SNPs and indels from recalibrated reads (gvcf mode)
 
-    params.recalbam = "${params.scpath}/*_recalibrated_reads.{bam,bai}"
+    params.recalbam = "${params.scpath}/../recal_bam/*_recalibrated_reads.{bam,bai}"
     recalbam_ch = Channel.fromFilePairs(params.recalbam)
      
     log.info """\
@@ -430,38 +431,33 @@ if (params.mode == 'callVariants') {
     ====================
     """
                                                                                     
-    process callVariants {                                            
+    process gvcf {                                            
     
         cpus = 4                                                           
         memory = 16.GB                                                     
-        time = '14h'                                                       
+        time = '24h'                                                       
         publishDir "$params.outdir", mode: 'move'
         tag "$sampleId"                                                    
                                                                            
         input:                                                             
+            val  gatk from params.gatk
             path ref  from params.ref                                      
             path fai  from params.fai                                      
             path dict from params.dict                                     
             tuple val(sampleId), path(bamfiles) from recalbam_ch       
                                                                            
         output:                                                            
-            tuple val(sampleId), path("${sampleId}_raw_variants.vcf")
-            // should've added output for *.vcf.idx -> made symlinks manually
+            tuple val(sampleId), path("${sampleId}.g.vcf")
 
         script:                                                            
         def bam = bamfiles.findAll{ it.toString() =~ /.bam$/ }.join('')    
         """                                                                
-        module load gatk/3.8.1                                             
-                                                                           
-        gatk -T HaplotypeCaller \
+        ${gatk} HaplotypeCaller \
+             -ERC GVCF \
              -R ${ref} \
              -I ${bam} \
-             --genotyping_mode DISCOVERY \
-             --output_mode EMIT_ALL_SITES \
-             -stand_call_conf 10 \
-             -o ${sampleId}_raw_variants.vcf \
-             -nt 1 -nct 24                                                 
-        """                                                                
+             -O ${sampleId}.g.vcf \
+        """
          
     }                                                                               
  

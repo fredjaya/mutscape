@@ -1,12 +1,17 @@
 # mutscape
-Variant calling pipeline to estimate *A. m. capensis* mutation rates.
 
-Took an iterative approach to pipeline development i.e. running nextflow processes individually to generate results, over developing a comprehensive pipeline with singularity (e.g. `nf-desktop` branch).
+Variant calling pipeline for estimating *A. m. capensis* mutation rates.
 
-## Variant calling 
-Following GATK 3.X best practices from Van der Auwera et al. (2013)
+## Branch notes
 
-### Downloading and indexing the reference genome
+This branch (gvcf) revises the variant calling step in the previous pipeline, follow [GATK4X best practices](https://gatk.broadinstitute.org/hc/en-us/articles/360035535932-Germline-short-variant-discovery-SNPs-Indels-)
+
+Variant calling will be conducted using HaplotypeCaller in GVCF mode with GATK4.1.8.0 
+
+BQSR and first pass variant calls for known sites will remain unchanged from the one using GATK3.8
+
+## Downloading and indexing the reference genome
+
 These are run prior to nextflow
 
 ```
@@ -30,7 +35,8 @@ qsub tests/scripts/2_ref_index.sh
 qsub scripts/3_create_dict.sh
 ```
 
-### Preparing sequence data (.fastq to .bam)
+## Preparing sequence data (.fastq to .bam)
+
 These are run through nextflow (`main.nf`). Each process is called by queueing nextflow to run individual processes. Processes need to be specified with `nextflow run --mode <process>`.
 
 ```
@@ -51,12 +57,11 @@ qsub run_scripts/4_realignerTargetCreator.sh
 qsub run_scripts/5_indelRealigner
 ```
 
-### Base Quality Score Recalibration
+## Base Quality Score Recalibration
 Bootstrapping known sites according to [documentation](https://github.com/broadinstitute/gatk-docs/blob/master/gatk3-methods-and-algorithms/Base_Quality_Score_Recalibration_(BQSR).md). 
 
 ```
 # Covariate tables and plots not generated here (TODO).
-# ReduceReads skipped as deprecated in GATK3
 
 # 6. Call confident sites for BSQR
 qsub run_scripts/6_haplotypeCallerUnrecal
@@ -68,76 +73,14 @@ qsub run_scripts/7_bsqrTable
 qsub run_scripts/8_recalibrateBQS.sh
 ```
 
-### Variant calling
+## Variant calling
+
 ```
-# 9. Call SNPs and indels from recalibrated reads 
+# 9. Run HaplotypeCaller in GVCF mode (single-sample) 
 qsub run_scripts/9_callVariants.sh
 ```
 
----
-
-## Variant hard-filtering and identification of candidate mutations
-```
-export DIR=/home/meep/Desktop/People/fred/Dropbox/meep/bee/02_working/2009_filter_vcf2
-
-# Merge individual vcf files into a single multiple-sample vcf
-bin/combineVariants.sh
-
-# Remove Fdrone and remove all sites that did not pass filters
-bin/excludeFiltered.sh
-bin/countVariants $DIR/combined_excludeFiltered.vcf $DIR/combined_excludeFiltered.stats
-Rscript bin/plotBcfStats.R $DIR/combined_excludeFiltered.stats
-
-# Remove sites with "NO_VARIATION"
-bin/excludeNonVariants.sh $DIR/combined_excludeFiltered.vcf $DIR/combined_exFil_exNonVar.vcf
-bin/get_stats.sh $DIR/combined_exFil_exNonVar.vcf $DIR/combined_exFil_exNonVar.stats
-
-# SNP Sites: 5532947
-# Indel Sites: 1522511
-# Called SNPs: 
-# NO_CALL SNPs:
-
-# Output SNPs only
-bin/removeIndels.sh $DIR/combined_exFil_exNonVar.vcf $DIR/combined_exFil_exNonVar_SNPs.vcf
-bin/get_stats.sh $DIR/combined_exFil_exNonVar_SNPs.vcf $DIR/combined_exFil_exNonVar_SNPs.stats
-bin/countSNPCalls.sh $DIR/combined_exFil_exNonVar_SNPs.vcf
-
-# SNP Sites: 3121875
-# Called SNPs: 43692913
-# NO_CALL SNPs: 3135213
-
-# Retain sites with one unique genotype
-python3 bin/genofreq.py genofreq $DIR/combined_exFil_exNonVar_SNPs.vcf $DIR/combined_exFil_exNonVar_SNPs_gtFreq.vcf
-bin/get_stats.sh $DIR/combined_exFil_exNonVar_SNPs_gtFreq.vcf $DIR/combined_exFil_exNonVar_SNPs_gtFreq.stats
-bin/countSNPCalls.sh $DIR/combined_exFil_exNonVar_SNPs_gtFreq.vcf
-
-# SNP Sites: 13626
-# Called SNPs: 86830
-# NO_CALL SNPs: 117561
-
-# Retain SNPs with GT depth >= 5 and GT quality >= 30
-vcftools --vcf $DIR/combined_exFil_exNonVar_SNPs_gtFreq.vcf --minDP 5 --minGQ 30 --recode --recode-INFO-all --out $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30
-bin/countSNPCalls.sh $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30.recode.vcf
-
-# SNP Sites: 13626
-# Called SNPs: 62600
-# NO_CALL SNPs: 141791
-
-# Retain sites with one unique genotype
-python3 bin/genofreq.py genofreq $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30.recode.vcf $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq.vcf
-bin/get_stats.sh $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq.vcf $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq.stats
-bin/countSNPCalls.sh $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq.vcf
-
-# SNP Sites: 5704
-# Called SNPs: 20548
-# NO_CALL SNPs: 65013
-
-# Retain sites with Worker calls
-python3 bin/genofreq.py orphan $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq.vcf $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq_workerSites.vcf
-bin/get_stats.sh $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq_workerSites.vcf $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq_workerSites.stats
-bin/countSNPCalls.sh $DIR/combined_exFil_exNonVar_SNPs_gtFreq_DP5_GQ30_gtFreq_workerSites.vcf
-
-# SNP Sites: 995
-# Called SNPs: 13377
-# NO_CALL_SNPs: 1549
-```
+## To-do
+- Consolidate GVCFs (GenomicsDBImport)
+- Joint-call cohort (GenotypeGVCFs)
+- Variant filtering
