@@ -2,7 +2,7 @@
 
 #PBS -P RDS-FSC-Scape-RW
 #PBS -l select=1:ncpus=1:mem=1GB
-#PBS -l walltime=24:00:00
+#PBS -l walltime=30:00:00
 
 WORKDIR=/scratch/Scape/fred/2010_gvcf
 NFDIR=/home/fjay0039/mutscape
@@ -12,4 +12,5 @@ module load nextflow/20.04.1
 
 nextflow run ${NFDIR}/main.nf \
 	--mode gvcf \
-	-profile pbs
+	-profile pbs \
+	-resume

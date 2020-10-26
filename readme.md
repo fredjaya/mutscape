@@ -77,7 +77,7 @@ qsub run_scripts/8_recalibrateBQS.sh
 
 ```
 # 9. Run HaplotypeCaller in GVCF mode (single-sample) 
-qsub run_scripts/9_callVariants.sh
+qsub run_scripts/9_gvcf.sh
 ```
 
 ## To-do

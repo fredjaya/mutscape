@@ -430,14 +430,15 @@ if (params.mode == 'gvcf') {
     outdir   : ${params.outdir}
     ====================
     """
-                                                                                    
+    
     process gvcf {                                            
     
         cpus = 4                                                           
         memory = 16.GB                                                     
-        time = '24h'                                                       
+        time = '30h'                                                       
         publishDir "$params.outdir", mode: 'move'
-        tag "$sampleId"                                                    
+        tag "$sampleId"
+        errorStrategy 'ignore'
                                                                            
         input:                                                             
             val  gatk from params.gatk
@@ -448,6 +449,7 @@ if (params.mode == 'gvcf') {
                                                                            
         output:                                                            
             tuple val(sampleId), path("${sampleId}.g.vcf")
+            tuple val(sampleId), path("${sampleId}.g.vcf.idx")
 
         script:                                                            
         def bam = bamfiles.findAll{ it.toString() =~ /.bam$/ }.join('')    
@@ -459,6 +461,5 @@ if (params.mode == 'gvcf') {
              -O ${sampleId}.g.vcf \
         """
          
-    }                                                                               
- 
+    }
 }
