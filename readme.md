@@ -78,9 +78,13 @@ qsub run_scripts/8_recalibrateBQS.sh
 ```
 # 9. Run HaplotypeCaller in GVCF mode (single-sample) 
 qsub run_scripts/9_gvcf.sh
+
+# 10. Consolidate GVCFs
+runscripts/10_consolidateGVCFs.sh
+
+# 11. Joint genotyping
+runscripts/11_jointGenotyping.sh
 ```
 
 ## To-do
-- Consolidate GVCFs (GenomicsDBImport)
-- Joint-call cohort (GenotypeGVCFs)
 - Variant filtering
