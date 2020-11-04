@@ -86,5 +86,58 @@ runscripts/10_consolidateGVCFs.sh
 runscripts/11_jointGenotyping.sh
 ```
 
-## To-do
-- Variant filtering
+## Variant filtering
+```
+export DIR=/home/meep/Desktop/People/fred/Dropbox/meep/bee/02_working/2010_consolidate
+export GATK=/home/meep/Desktop/Biocomputing/gatk-4.1.8.1/gatk
+export REF=/home/meep/Desktop/People/fred/Dropbox/meep/bee/02_working/2009_filter_vcf/GCF_003254395.2_Amel_HAv3.1_genomic.fa
+
+# Get initial variant counts
+bin/countVariants.sh $DIR/joint_genotype.vcf.gz $DIR/joint_genotype.stats
+
+# SNP sites: 3156296
+# Indel sites: 1520510
+
+# Output SNPs 
+$GATK SelectVariants \
+	-R $REF \
+	-V $DIR/joint_genotype.vcf.gz \
+	--select-type-to-include SNP \
+	-O $DIR/joint_genotype_SNPs.vcf.gz
+
+# Count SNP
+bin/countVariants.sh $DIR/joint_genotype_SNPs.vcf.gz $DIR/joint_genotype.stats	
+
+# SNPs: 3114386
+
+# Variants to table for diagnostic plots
+$GATK VariantsToTable \
+	-R $REF \
+	-V $DIR/joint_genotype_SNPs.vcf.gz \
+	-F CHROM -F POS -F QUAL -F QD -F DP -F MQ -F MQRankSum -F FS -F ReadPosRankSum -F SOR -GF GQ  \	
+	-O $DIR/joint_genotype_SNPs.table
+
+# Count SNPs per sample
+bin/countVariants.sh $DIR/joint_genotype_SNPs.vcf.gz $DIR/joint_genotype.stats
+plot-vcfstats -p $DIR $DIR/joint_genotype.stats
+bin/get_sample_SNPs.sh $DIR/joint_genotype.stats $DIR/joint_genotype.psc
+
+# Site filters according to [GATK](https://gatk.broadinstitute.org/hc/en-us/articles/360035890471-Hard-filtering-germline-short-variants)
+
+$GATK VariantFiltration \
+	-R $REF \
+	-V $DIR/joint_genotype_SNPs.vcf.gz \
+	-O $DIR/sitesFiltered_SNPs.vcf.gz \
+	--filter-name "site_filter_QD" \
+	--filter-expression "QD < 2.0" \
+	--filter-name "site_filter_FS" \
+	--filter-expression "FS > 60.0" \
+	--filter-name "site_filter_SOR" \
+	--filter-expression "SOR > 5.0" \
+	--filter-name "site_filter_MQ" \
+	--filter-expression "MQ < 40.0" \
+	--filter-name "site_filter_MQRankSum" \
+	--filter-expression "MQRankSum < -12.5" \
+	--filter-name "site_filter_ReadPosRankSum" \
+	--filter-expression "ReadPosRankSum > 10.0"
+```

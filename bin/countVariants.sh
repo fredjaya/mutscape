@@ -9,4 +9,4 @@ then
   exit 1
 fi
 
-$BCFTOOLS stats $1 > $2
+$BCFTOOLS stats -s - $1 > $2
