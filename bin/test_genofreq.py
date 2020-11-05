@@ -12,17 +12,14 @@ class test_genofreq(unittest.TestCase):
         """ Site pass """
         # This site in .vcf was removed when it shouldn't have
         self.false_neg = {'0/1':14, '1/1':1}
-        
         self.true_neg = {'./.':1, '1/1':14}
         self.true_pos = {'1/1':1, '0/0':1, '0/1':12}
         
         # Add phased genotypes
-
-        self.false_neg_ph = {'0/1':14, '1/1':1}
+        self.false_neg_ph = {'0|1':14, '1/1':1}
+        self.true_neg_ph = {'.|.':1, '1/1':14}
+        self.true_pos_ph = {'1|1':1, '0/0':1, '0/1':12}
         
-        self.true_neg_ph = {'./.':1, '1/1':14}
-        self.true_pos_ph = {'1/1':1, '0/0':1, '0/1':12}
-
     def test_match_gt(self):
         self.assertEqual(
                 match_gt(self.gt_normal), "0/1")
@@ -39,6 +36,15 @@ class test_genofreq(unittest.TestCase):
         
         self.assertTrue(
                 site_pass(self.true_pos))
+        
+        self.assertTrue(
+                site_pass(self.false_neg_ph))
+        
+        self.assertFalse(
+                site_pass(self.true_neg_ph))
+        
+        self.assertTrue(
+                site_pass(self.true_pos_ph))
         
 
 class test_orphan(unittest.TestCase):

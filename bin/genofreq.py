@@ -14,8 +14,12 @@ def match_gt(gt):
     """
     Regex for genotype
     """
-    r = re.compile("(\d+\/\d+)|(\.\/\.)")
-    return r.match(gt).group(0)
+    r = re.compile("(\d+\/\d+)|(\.\/\.)|(\d+\|\d+)|(\.\|\.)")
+    matched_gts = r.match(gt).group(0)
+    # Phased and unphased genotypes treated the same
+    matched_gts = re.sub("\/|\|", "_", matched_gts)
+    print(matched_gts)
+    return
 
 def count_genotypes(gt_info):
     """
