@@ -105,10 +105,10 @@ $GATK SelectVariants \
 	--select-type-to-include SNP \
 	-O $DIR/joint_genotype_SNPs.vcf.gz
 
-# Count SNP
+# Count sites
 bin/countVariants.sh $DIR/joint_genotype_SNPs.vcf.gz $DIR/joint_genotype.stats	
 
-# SNPs: 3114386
+# Sites: 3114386
 
 # Variants to table for diagnostic plots
 $GATK VariantsToTable \
@@ -121,6 +121,8 @@ $GATK VariantsToTable \
 bin/countVariants.sh $DIR/joint_genotype_SNPs.vcf.gz $DIR/joint_genotype.stats
 plot-vcfstats -p $DIR $DIR/joint_genotype.stats
 bin/get_sample_SNPs.sh $DIR/joint_genotype.stats $DIR/joint_genotype.psc
+
+# Ran diagnosis.R here
 
 # Site filters according to [GATK](https://gatk.broadinstitute.org/hc/en-us/articles/360035890471-Hard-filtering-germline-short-variants)
 
@@ -140,4 +142,67 @@ $GATK VariantFiltration \
 	--filter-expression "MQRankSum < -12.5" \
 	--filter-name "site_filter_ReadPosRankSum" \
 	--filter-expression "ReadPosRankSum > 10.0"
+
+# Separate PASS and FAIL sites
+gzip -d $DIR/sitesFiltered_SNPs.vcf.gz
+grep -E '^#|PASS' $DIR/sitesFiltered_SNPs.vcf > $DIR/sitesFiltered_PASS.vcf
+
+grep -E '^#' $DIR/sitesFiltered_SNPs.vcf > $DIR/sitesFiltered_FAIL.vcf && \
+grep -Ev 'PASS' $DIR/sitesFiltered_SNPs.vcf >> $DIR/sitesFiltered_FAIL.vcf
+
+bin/countVariants.sh $DIR/sitesFiltered_PASS
+
+# Sites: 2984762
+# Removed 1129624
+
+## Genotype filtering DP < 5 and GQ < 30 (Yang, 2017; Yagound, 2020)
+
+# Create table
+$GATK VariantsToTable \
+	-R $REF \
+	-V $DIR/sitesFiltered_PASS.vcf \
+	-F CHROM -F POS -GF GT -GF DP -GF GQ \
+	-O $DIR/sitesFiltered_PASS.table
+
+# Generate diagnostic plots for DP and GQ
+
+# Genotype filtering
+# DP > 80 removed, likely mapping error based on highest average SNP depth form joint_genotype.vcf
+$GATK VariantFiltration \
+	-R $REF \
+	-V $DIR/sitesFiltered_PASS.vcf \
+	-O $DIR/sitesFiltered_PASS_gtFiltered.vcf \
+	--genotype-filter-expression "GQ < 30" \
+	--genotype-filter-name "GQ_30" \
+	--genotype-filter-expression "DP < 5 || DP > 80" \
+	--genotype-filter-name "DP_5-80"
+
+# Mask SNPs that failed genotype filters
+$GATK SelectVariants \
+	-R $REF \ 
+	-V $DIR/sitesFiltered_PASS_gtFiltered.vcf \
+	-O $DIR/sitesPASS_gtPASS.vcf \
+	--set-filtered-gt-to-nocall
+
+# Get counts
+bin/countVariants.sh $DIR/sitesPASS_gtPASS 
+
+# Retain sites with one unique genotype
+# This removes sites with identical genotypes across samples
+# And sites where the same mutation is found in >1 sample
+python3 bin/genofreq.py genofreq $DIR/sitesPASS_gtPASS.vcf $DIR/genofreq.vcf
+bin/countVariants.sh $DIR/genofreq
+
+# Sites: 220902
+# Removed 2763860
+
+# Remove sites without a SNP called in Worker
+python3 bin/genofreq.py orphan $DIR/genofreq.vcf $DIR/genofreq_orphan.vcf 
+bin/countVariants.sh $DIR/genofreq_orphan
+
+# Sites: 160830
+# Removed 60072
+
+# Filter 
 ```
+

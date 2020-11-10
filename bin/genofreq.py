@@ -18,8 +18,7 @@ def match_gt(gt):
     matched_gts = r.match(gt).group(0)
     # Phased and unphased genotypes treated the same
     matched_gts = re.sub("\/|\|", "_", matched_gts)
-    print(matched_gts)
-    return
+    return(matched_gts)
 
 def count_genotypes(gt_info):
     """
@@ -45,7 +44,7 @@ def site_pass(gt_counts):
     pass_filter = False
     
     for key, value in gt_counts.items():
-        if value == 1 and not key == "./.":
+        if value == 1 and not key == '._.':
             pass_filter = True
             
     return pass_filter
@@ -73,7 +72,7 @@ def retain_worker(gt):
     """
     Write site to new file if Worker genotype != ./.
     """
-    if not gt == "./.":
+    if not gt == "._.":
         return True
     return False
 
