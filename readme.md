@@ -91,13 +91,16 @@ runscripts/11_jointGenotyping.sh
 export DIR=/home/meep/Desktop/People/fred/Dropbox/meep/bee/02_working/2010_consolidate
 export GATK=/home/meep/Desktop/Biocomputing/gatk-4.1.8.1/gatk
 export REF=/home/meep/Desktop/People/fred/Dropbox/meep/bee/02_working/2009_filter_vcf/GCF_003254395.2_Amel_HAv3.1_genomic.fa
-
+export BCFTOOLS=/home/meep/Desktop/Biocomputing/
 # Get initial variant counts
 bin/countVariants.sh $DIR/joint_genotype.vcf.gz $DIR/joint_genotype.stats
 
 # SNP sites: 3156296
 # Indel sites: 1520510
+```
 
+### SNP Filtering
+```
 # Output SNPs 
 $GATK SelectVariants \
 	-R $REF \
@@ -203,6 +206,145 @@ bin/countVariants.sh $DIR/genofreq_orphan
 # Sites: 160830
 # Removed 60072
 
-# Filter 
 ```
+
+### Indel filtering
+```
+# Output indels 
+$GATK SelectVariants \
+	-R $REF \
+	-V $DIR/joint_genotype.vcf.gz \
+	--select-type-to-include INDEL \
+	-O $DIR/joint_genotype_INDELs.vcf.gz
+
+bin/countVariants.sh $DIR/joint_genotype_INDELs
+
+# Sites: 1454989
+# 20275743 indels
+
+# Make diagnostic plots 
+$GATK VariantsToTable \
+	-R $REF \
+	-V $DIR/joint_genotype_INDELs.vcf.gz \
+	-F CHROM -F POS -F QUAL -F QD -F DP -F MQ -F MQRankSum -F FS -F ReadPosRankSum -F SOR  \	
+	-O $DIR/joint_genotype_INDELs.table
+
+# Indel filtration - sites
+$GATK VariantFiltration \
+	-R $REF \
+	-V $DIR/joint_genotype_INDELs.vcf.gz \
+	-O $DIR/sitesFiltered_INDELs.vcf.gz \
+	--filter-name "QD_2" \
+	--filter-expression "QD < 2.0" \
+	--filter-name "FS_60" \
+	--filter-expression "FS > 60.0" \
+	--filter-name "SOR_5" \
+	--filter-expression "SOR > 5.0" \
+	--filter-name "MQ_40" \
+	--filter-expression "MQ < 40.0" \
+	--filter-name "MQRankSum_-12.5" \
+	--filter-expression "MQRankSum < -12.5" \
+	--filter-name "ReadPosRankSum_11" \
+	--filter-expression "ReadPosRankSum > 10.0"
+
+# Separate PASS and FAIL sites
+gzip -d $DIR/sitesFiltered_INDELs.vcf.gz
+grep -E '^#|PASS' $DIR/sitesFiltered_INDELs.vcf > $DIR/sitesFiltered_INDELs_PASS.vcf
+
+grep -E '^#' $DIR/sitesFiltered_INDELs.vcf > $DIR/sitesFiltered_INDELs_FAIL.vcf && \
+grep -Ev 'PASS' $DIR/sitesFiltered_SNPs.vcf >> $DIR/sitesFiltered_FAIL.vcf
+
+bin/countVariants.sh $DIR/sitesFiltered_INDELs_PASS
+
+# Sites: 1409797
+# 19928658 indels
+# 347085 removed
+```
+
+### Merge SNPs and Indels
+```
+export BCFTOOLS=/home/meep/Desktop/Biocomputing/bcftools-1.10.2/bcftools
+
+bgzip -c $DIR/genofreq_orphan.vcf > $DIR/genofreq_orphan.vcf.gz
+bgzip -c $DIR/sitesFiltered_INDELs_PASS.vcf > $DIR/sitesFiltered_INDELs_PASS.vcf.gz
+
+$BCFTOOLS index $DIR/sitesFiltered_INDELs_PASS.vcf.gz
+$BCFTOOLS index $DIR/genofreq_orphan.vcf.gz
+
+$BCFTOOLS concat -a \
+	$DIR/genofreq_orphan.vcf.gz \
+	$DIR/sitesFiltered_INDELs_PASS.vcf.gz \
+	-o $DIR/merged_variants.vcf
+
+bin/countVariants.sh $DIR/merged_variants
+
+# SNP sites: 160830
+# Indel sites: 1409797
+
+# Filter SNPs near indels
+$BCFTOOLS filter --SnpGap 10 $DIR/merged_variants.vcf -o $DIR/merged_snpgap.vcf
+
+bin/countVariants.sh $DIR/merged_snpgap
+
+# SNP sites: 1515037
+# 2422573 SNPs
+# 39932888 SNPs removed
+
+# Remove indels (again)
+$GATK SelectVariants \
+	-R $REF \
+	-V $DIR/merged_snpgap.vcf \
+	--select-type-to-include SNP \
+	-O $DIR/snpgap_SNPs.vcf
+
+bin/countVariants.sh $DIR/snpgap_SNPs
+
+ 
+
+
+```
+
+# Checking recombinant regions
+```
+export REC=~/Desktop/People/fred/Dropbox/meep/bee/02_working/2011_recombination
+
+# Subset mapped chromosomes
+$GATK SelectVariants \
+	-R $REF \
+	-V $DIR/joint_genotype.vcf.gz \
+	-L NC_037638.1 \ 
+	-L NC_037639.1 \
+	-L NC_037640.1 \
+	-L NC_037641.1 \
+	-L NC_037642.1 \
+	-L NC_037643.1 \
+	-L NC_037644.1 \
+	-L NC_037645.1 \
+	-L NC_037646.1 \
+	-L NC_037647.1 \
+	-L NC_037648.1 \
+	-L NC_037649.1 \
+	-L NC_037650.1 \
+	-L NC_037651.1 \
+	-L NC_037652.1 \
+	-L NC_037653.1 \
+	-O $REC/joint_genotype_mappedChr.vcf.gz
+
+```
+
+Filtering checklist:
+- [x] SNPs - per-site filters
+- [x] Indels - per-site filters
+- [x] Remove SNPs within 10bp of indels
+- [x] SNP genotype filtering
+- [x] Retain sites with one unique genotype
+- [x] Remove sites without Workers 
+- [ ] Remove sites where only one SNP exists
+- [ ] Remove sites where Worker's genotype is unique
+- [ ] Remove recombinant regions
+- [ ] Subset mapped regions
+
+
+
+
 

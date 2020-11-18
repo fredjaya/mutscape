@@ -11,7 +11,7 @@ fi
 # Produce bcftools stats, per sample
 echo "Running bcftools stats"
 $BCFTOOLS stats -s - $1.vcf > $1.stats && \
-
+#$BCFTOOLS stats -s - $1.vcf.gz > $1.stats && \
 # Subset per sample SNP counts
 echo "Subsetting per-sample SNP counts"
 awk -F '\t' '/^\# PSC\t/;/^PSC/' $1.stats | \
