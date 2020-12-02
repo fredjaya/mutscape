@@ -2,7 +2,7 @@
 
 import unittest
 from genofreq import match_gt, site_pass
-from genofreq import get_worker_gt_info
+from orphan import get_worker_gt_info
 
 class test_genofreq(unittest.TestCase):
     def setUp(self):

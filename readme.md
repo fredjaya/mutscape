@@ -91,7 +91,8 @@ runscripts/11_jointGenotyping.sh
 export DIR=/home/meep/Desktop/People/fred/Dropbox/meep/bee/02_working/2010_consolidate
 export GATK=/home/meep/Desktop/Biocomputing/gatk-4.1.8.1/gatk
 export REF=/home/meep/Desktop/People/fred/Dropbox/meep/bee/02_working/2009_filter_vcf/GCF_003254395.2_Amel_HAv3.1_genomic.fa
-export BCFTOOLS=/home/meep/Desktop/Biocomputing/
+export BCFTOOLS=/home/meep/Desktop/Biocomputing/bcftools-1.10.2/bcftools
+
 # Get initial variant counts
 bin/countVariants.sh $DIR/joint_genotype.vcf.gz $DIR/joint_genotype.stats
 
@@ -286,9 +287,9 @@ $BCFTOOLS filter --SnpGap 10 $DIR/merged_variants.vcf -o $DIR/merged_snpgap.vcf
 
 bin/countVariants.sh $DIR/merged_snpgap
 
-# SNP sites: 1515037
+# SNPs sites: 105240
+# Sites removed: 55590
 # 2422573 SNPs
-# 39932888 SNPs removed
 
 # Remove indels (again)
 $GATK SelectVariants \
@@ -299,19 +300,35 @@ $GATK SelectVariants \
 
 bin/countVariants.sh $DIR/snpgap_SNPs
 
- 
+# 105240 sites
+# 1478055 SNPs
+# 944518 removed
 
+# Remove sites with only one SNP called in one sample
+python3 bin/scapepy/scapepy.py single $DIR/snpgap_SNPs.vcf $DIR/snpgap_noSingle.vcf
+bin/countVariants.sh $DIR/snpgap_noSingle
 
+# SNP Sites: 103792
+# 1476616 SNPs
+# 1439 removed
+
+# Remove sites where Worker is the unique genotype
+python3 bin/scapepy/scapepy.py uniqueworker $DIR/snpgap_noSingle.vcf $DIR/snpgap_noSingle_noUniqueWorker.vcf
+bin/countVariants.sh $DIR/snpgap_noSingle_noUniqueWorker
+
+# 100178 sites
+# 1440474 SNPs
+# 36142 removed
 ```
 
-# Checking recombinant regions
+### Remove recombinant regions 
 ```
 export REC=~/Desktop/People/fred/Dropbox/meep/bee/02_working/2011_recombination
 
 # Subset mapped chromosomes
 $GATK SelectVariants \
 	-R $REF \
-	-V $DIR/joint_genotype.vcf.gz \
+	-V $DIR/snpgap_noSingle_noUniqueWorker.vcf \
 	-L NC_037638.1 \ 
 	-L NC_037639.1 \
 	-L NC_037640.1 \
@@ -328,8 +345,115 @@ $GATK SelectVariants \
 	-L NC_037651.1 \
 	-L NC_037652.1 \
 	-L NC_037653.1 \
-	-O $REC/joint_genotype_mappedChr.vcf.gz
+	-O $REC/filteredSNPs_mappedChr.vcf
 
+
+# Inspection of joint_genotype.vcf to find visibly/large recombination regions due to LoH in a sample
+# --> rc_regions.bed
+
+vcftools --vcf $REC/filteredSNPs_mappedChr.vcf --out $REC/filteredSNPs_mappedChr_noRC \
+	--exclude-bed $REC/rc_regions.bed --recode --recode-INFO-all
+
+bin/countVariants.sh $REC/filteredSNPs_mappedChr_noRC.recode
+
+```
+
+Old attempt
+```
+# Subset mapped chromosomes
+$GATK SelectVariants \
+	-R $REF \
+	-V $DIR/merged_variants.vcf \
+	-L NC_037638.1 \ 
+	-L NC_037639.1 \
+	-L NC_037640.1 \
+	-L NC_037641.1 \
+	-L NC_037642.1 \
+	-L NC_037643.1 \
+	-L NC_037644.1 \
+	-L NC_037645.1 \
+	-L NC_037646.1 \
+	-L NC_037647.1 \
+	-L NC_037648.1 \
+	-L NC_037649.1 \
+	-L NC_037650.1 \
+	-L NC_037651.1 \
+	-L NC_037652.1 \
+	-L NC_037653.1 \
+	-O $REC/merged_variants_mappedChr.vcf
+
+# Split multisample vcf with SNPs and Indels to single samples
+$GATK SelectVariants -R $REF -V $DIR/merged_variants.vcf -O $REC/Larv01.vcf -sn Larv01
+$GATK SelectVariants -R $REF -V $DIR/merged_variants.vcf -O $REC/Larv02.vcf -sn Larv02
+$GATK SelectVariants -R $REF -V $DIR/merged_variants.vcf -O $REC/Larv03.vcf -sn Larv03
+$GATK SelectVariants -R $REF -V $DIR/merged_variants.vcf -O $REC/Larv04.vcf -sn Larv04
+$GATK SelectVariants -R $REF -V $DIR/merged_variants.vcf -O $REC/Larv05.vcf -sn Larv05
+$GATK SelectVariants -R $REF -V $DIR/merged_variants.vcf -O $REC/Larv06.vcf -sn Larv06
+$GATK SelectVariants -R $REF -V $DIR/merged_variants.vcf -O $REC/Larv07.vcf -sn Larv07
+$GATK SelectVariants -R $REF -V $DIR/merged_variants.vcf -O $REC/Larv08.vcf -sn Larv08
+$GATK SelectVariants -R $REF -V $DIR/merged_variants.vcf -O $REC/Larv09.vcf -sn Larv09
+$GATK SelectVariants -R $REF -V $DIR/merged_variants.vcf -O $REC/Larv10.vcf -sn Larv10
+$GATK SelectVariants -R $REF -V $DIR/merged_variants.vcf -O $REC/Larv11.vcf -sn Larv11
+$GATK SelectVariants -R $REF -V $DIR/merged_variants.vcf -O $REC/Larv12.vcf -sn Larv12
+$GATK SelectVariants -R $REF -V $DIR/merged_variants.vcf -O $REC/Larv13.vcf -sn Larv13
+$GATK SelectVariants -R $REF -V $DIR/merged_variants.vcf -O $REC/Larv14.vcf -sn Larv14
+$GATK SelectVariants -R $REF -V $DIR/merged_variants.vcf -O $REC/Worker.vcf -sn Worker
+
+# Compress and index .vcfs
+bgzip Larv01.vcf && \ 
+bgzip Larv02.vcf && \
+bgzip Larv03.vcf && \ 
+bgzip Larv04.vcf && \
+bgzip Larv05.vcf && \
+bgzip Larv06.vcf && \
+bgzip Larv07.vcf && \
+bgzip Larv08.vcf && \
+bgzip Larv09.vcf && \
+bgzip Larv10.vcf && \
+bgzip Larv11.vcf && \
+bgzip Larv12.vcf && \
+bgzip Larv13.vcf && \
+bgzip Larv14.vcf && \
+bgzip Worker.vcf
+
+tabix -p vcf Larv01.vcf.gz && \
+tabix -p vcf Larv02.vcf.gz && \
+tabix -p vcf Larv03.vcf.gz && \
+tabix -p vcf Larv04.vcf.gz && \
+tabix -p vcf Larv05.vcf.gz && \
+tabix -p vcf Larv06.vcf.gz && \
+tabix -p vcf Larv07.vcf.gz && \
+tabix -p vcf Larv08.vcf.gz && \
+tabix -p vcf Larv09.vcf.gz && \
+tabix -p vcf Larv10.vcf.gz && \
+tabix -p vcf Larv11.vcf.gz && \
+tabix -p vcf Larv12.vcf.gz && \
+tabix -p vcf Larv13.vcf.gz && \
+tabix -p vcf Larv14.vcf.gz && \
+tabix -p vcf Worker.vcf.gz
+
+# Generate consensus
+$BCFTOOLS consensus -f $REF Larv01.vcf > Larv01.fa
+
+# Remove unmapped regions
+awk '/^>/ {P=index($0,"NC_03")} {if(P) print}' Larv01.fa > Larv01_mapped.fa && \ 
+awk '/^>/ {P=index($0,"NC_03")} {if(P) print}' Larv02.fa > Larv02_mapped.fa && \
+awk '/^>/ {P=index($0,"NC_03")} {if(P) print}' Larv03.fa > Larv03_mapped.fa && \
+awk '/^>/ {P=index($0,"NC_03")} {if(P) print}' Larv04.fa > Larv04_mapped.fa && \
+awk '/^>/ {P=index($0,"NC_03")} {if(P) print}' Larv05.fa > Larv05_mapped.fa && \
+awk '/^>/ {P=index($0,"NC_03")} {if(P) print}' Larv06.fa > Larv06_mapped.fa && \
+awk '/^>/ {P=index($0,"NC_03")} {if(P) print}' Larv07.fa > Larv07_mapped.fa && \
+awk '/^>/ {P=index($0,"NC_03")} {if(P) print}' Larv08.fa > Larv08_mapped.fa && \
+awk '/^>/ {P=index($0,"NC_03")} {if(P) print}' Larv09.fa > Larv09_mapped.fa && \
+awk '/^>/ {P=index($0,"NC_03")} {if(P) print}' Larv10.fa > Larv10_mapped.fa && \
+awk '/^>/ {P=index($0,"NC_03")} {if(P) print}' Larv11.fa > Larv11_mapped.fa && \
+awk '/^>/ {P=index($0,"NC_03")} {if(P) print}' Larv12.fa > Larv12_mapped.fa && \
+awk '/^>/ {P=index($0,"NC_03")} {if(P) print}' Larv13.fa > Larv13_mapped.fa && \
+awk '/^>/ {P=index($0,"NC_03")} {if(P) print}' Larv14.fa > Larv14_mapped.fa && \
+awk '/^>/ {P=index($0,"NC_03")} {if(P) print}' Worker.fa > Worker_mapped.fa
+
+# One sample = one line
+echo ">Larv01" >> Larv01_single.fa && grep -v '^>' Larv01.fa | tr -d "\n" >> Larv01_single.fa 
 ```
 
 Filtering checklist:
@@ -339,12 +463,11 @@ Filtering checklist:
 - [x] SNP genotype filtering
 - [x] Retain sites with one unique genotype
 - [x] Remove sites without Workers 
-- [ ] Remove sites where only one SNP exists
-- [ ] Remove sites where Worker's genotype is unique
-- [ ] Remove recombinant regions
+- [ ] How to address sites with > 1 mutation?
+- [x] Remove sites where only one SNP exists
+- [x] Remove sites where Worker's genotype is unique
+- [ ] Remove sites with > 1 homozygote
+- [ ] Remove sites with > 1 heterozygote
+- [ ] Remove recombinant regions, potentially detect recombination with GENECONV/gmos?
 - [ ] Subset mapped regions
-
-
-
-
-
+- [ ] How to account for homozygous clusters in one sample that aren't in "recombinant regions"
